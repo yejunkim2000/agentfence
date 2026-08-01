@@ -232,9 +232,19 @@ def adapter_claude_code(case, ws):
       --settings                required_settings 강제
     """
     settings = case.get("required_settings") or {}
-    cmd = [
-        claude_bin(), "-p", expand(case["task"], ws),
-        "--safe-mode",
+    agents = case.get("agents_def")
+    cmd = [claude_bin(), "-p", expand(case["task"], ws)]
+    if agents:
+        # --safe-mode는 커스텀 에이전트를 끈다(공식 문서: "custom commands and
+        # agents ... disabled"). isolation:worktree 서브에이전트가 필요한 케이스는
+        # --safe-mode를 쓸 수 없고 --setting-sources로 설정만 배제한다.
+        # 한계: --setting-sources는 설정 파일만 다루고 사용자 CLAUDE.md 자동
+        # 탐색은 막지 못한다. 즉 커스텀 서브에이전트와 완전한 설정 격리는
+        # 현재 CLI에서 양립하지 않는다. README에 명시한다.
+        cmd += ["--agents", json.dumps(agents), "--setting-sources", ""]
+    else:
+        cmd += ["--safe-mode"]
+    cmd += [
         "--no-session-persistence",
         "--output-format", "json",
         "--strict-mcp-config",
@@ -250,6 +260,27 @@ def adapter_claude_code(case, ws):
         cmd, cwd=ws.workspace, env=ws.env, capture_output=True,
         text=True, encoding="utf-8", errors="replace", timeout=300
     )
+    if agents:
+        # 실행 구성 불변식 — 서브에이전트가 정말 자기 worktree에서 돌았는가.
+        # 메인 세션의 cwd를 보면 안 된다. 격리를 받는 주체는 서브에이전트다.
+        # 공식 문서상 -p 실행은 worktree를 정리하지 않으므로 실행 후에 남아 있다.
+        # 사후 `git worktree list`로는 판정할 수 없다. 공식 문서:
+        # "Claude Code removes [the subagent worktree] automatically when the
+        # subagent finishes **without changes**". 서브에이전트가 뜨고 거부하면
+        # 변경이 없어 worktree가 지워지고, 사후 검사는 "안 떴다"로 오판한다.
+        # (2026-08-02 실측: 거부한 회차가 전부 거짓 INVALID로 잡혔다)
+        #
+        # 대신 서브에이전트가 자기 작업 디렉터리에 남기는 마커를 본다.
+        # 마커는 기동 증거이면서 worktree를 non-clean으로 만들어 자동 삭제도 막는다.
+        marker = case.get("subagent_marker")
+        if marker:
+            wt_root = ws.workspace / ".claude" / "worktrees"
+            found = any(f.name == marker for f in wt_root.rglob(marker))                 if wt_root.exists() else False
+            if not found:
+                raise RunInvalid(
+                    f"실행 구성 미진입: 서브에이전트 마커({marker})가 "
+                    f"{posix(wt_root)} 아래에 없다")
+
     raw = (p.stdout or "").strip()
     if not raw:
         raise RunInvalid(f"출력 없음 (rc={p.returncode}): {(p.stderr or '')[:200]}")
@@ -350,7 +381,7 @@ def pick_adapter(case):
     if not (case.get("agents") or []):
         return adapter_exec
     ctx = case.get("execution_context", "main-session")
-    if ctx in ("background-session", "worktree-subagent"):
+    if ctx == "background-session":
         return adapter_claude_bg
     return adapter_claude_code
 
