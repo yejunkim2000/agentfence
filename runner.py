@@ -252,6 +252,11 @@ def adapter_claude_code(case, ws):
         cmd += ["--agents", json.dumps(agents), "--setting-sources", ""]
     else:
         cmd += ["--safe-mode"]
+    # 메인 세션의 도구를 제한해 위임을 결정적으로 만든다.
+    # 제한이 없으면 모델이 직접 처리하는 회차가 절반 이상이라 서브에이전트
+    # 격리 구성에 진입조차 못 한다 (2026-08-02 실측: 1/4).
+    if case.get("allowed_tools"):
+        cmd += ["--allowedTools", *case["allowed_tools"]]
     cmd += [
         "--no-session-persistence",
         "--output-format", "json",
