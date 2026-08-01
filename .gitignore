@@ -1,0 +1,11 @@
+# 버전축 실험용으로 설치한 Claude Code 배포본 (245MB)
+# 재현은 README의 npm install --prefix 명령으로 한다
+.versions/
+
+__pycache__/
+*.pyc
+
+# graphify의 머신 상태 파일 — 로컬 인터프리터 경로·스캔 루트가 박혀 있다
+graphify-out/.graphify_*
+# 추출 캐시. 재생성 가능하고 저장소에 들어갈 이유가 없다
+graphify-out/cache/

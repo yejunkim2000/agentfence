@@ -1,0 +1,62 @@
+{
+  "ARCHITECTURE.md": {
+    "mtime": 1785474321.7323182,
+    "ast_hash": "1a4056720567a6464eab58dbf4d5b993",
+    "semantic_hash": "1a4056720567a6464eab58dbf4d5b993"
+  },
+  "docs/00-charter.md": {
+    "mtime": 1785474341.3943424,
+    "ast_hash": "97178eca7477eed0e0a8ab5207d2b336",
+    "semantic_hash": "97178eca7477eed0e0a8ab5207d2b336"
+  },
+  "docs/10-trust-boundaries.md": {
+    "mtime": 1785474358.7535675,
+    "ast_hash": "d18890ac0c90978b488b0e5a1b1571fc",
+    "semantic_hash": "d18890ac0c90978b488b0e5a1b1571fc"
+  },
+  "docs/20-cases-claude-code.md": {
+    "mtime": 1785474371.7674243,
+    "ast_hash": "033f0549b9103dbfaf47966173f3a337",
+    "semantic_hash": "033f0549b9103dbfaf47966173f3a337"
+  },
+  "docs/21-cases-other-agents.md": {
+    "mtime": 1785474385.0522704,
+    "ast_hash": "8d41ad3bf44412b633abee73177e0ca0",
+    "semantic_hash": "8d41ad3bf44412b633abee73177e0ca0"
+  },
+  "docs/22-case-guardfall.md": {
+    "mtime": 1785474395.9385169,
+    "ast_hash": "278b32772744bdf344d93b5f0e257d92",
+    "semantic_hash": "278b32772744bdf344d93b5f0e257d92"
+  },
+  "docs/30-mcp-landscape.md": {
+    "mtime": 1785474415.7716122,
+    "ast_hash": "0bdc9413926d954823671690bffdd229",
+    "semantic_hash": "0bdc9413926d954823671690bffdd229"
+  },
+  "docs/40-prior-art-gap.md": {
+    "mtime": 1785474432.8238933,
+    "ast_hash": "0ec2668a057f318f0f49ffba64187fc2",
+    "semantic_hash": "0ec2668a057f318f0f49ffba64187fc2"
+  },
+  "docs/50-harness-design.md": {
+    "mtime": 1785474458.3774266,
+    "ast_hash": "aa360a7ccf54c1eacc8b93aa219d2694",
+    "semantic_hash": "aa360a7ccf54c1eacc8b93aa219d2694"
+  },
+  "docs/60-plan.md": {
+    "mtime": 1785476040.2593446,
+    "ast_hash": "8ac2e1a4995e3eb6dfe7c11a68835eab",
+    "semantic_hash": "8ac2e1a4995e3eb6dfe7c11a68835eab"
+  },
+  "docs/70-references.md": {
+    "mtime": 1785474486.9788933,
+    "ast_hash": "6dc47505e31bd3e890b0ddb621c14d1f",
+    "semantic_hash": "6dc47505e31bd3e890b0ddb621c14d1f"
+  },
+  "AUGUST.md": {
+    "mtime": 1785476028.1656911,
+    "ast_hash": "27af9cfdd5dbdec97e7306069d08b1f1",
+    "semantic_hash": "27af9cfdd5dbdec97e7306069d08b1f1"
+  }
+}
