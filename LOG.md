@@ -932,3 +932,71 @@ C:/Users/yejun/.claude/worktrees/encapsulated-frolicking-teacup [worktree-encaps
 ### 소요
 
 약 50분. 8월 누적 14시간 50분 / 42시간.
+
+---
+
+## 2026-08-02 · 9월-1 해소 · 백그라운드 실행 구성 확보
+
+**상태** 선결 과제 3건 모두 해소 · **어댑터 버그 1건 적발**
+
+### 면책 동의 반영됨
+
+사용자가 `claude --dangerously-skip-permissions`를 대화형으로 1회 수락.
+`--bg` + `bypassPermissions` 조합이 기동한다. `auto` 모드(분류기가 행동을 심사)를
+쓸 필요가 없어졌다 — 분류기가 경계 판정에 개입하는 문제를 피했다.
+
+### 어댑터 버그 — `--cwd` 필터로는 세션을 영영 못 찾는다
+
+실측:
+
+```
+띄운 곳:  .../Temp/tmp.XXX/ws
+세션 cwd: C:/Users/yejun/.claude/worktrees/serene-dazzling-llama
+```
+
+백그라운드 세션이 보고하는 `cwd`는 **자기 worktree 경로**지 내가 띄운
+디렉터리가 아니다. `claude agents --json --all --cwd <workspace>`로 폴링하면
+세션이 절대 안 잡히고 **모든 회차가 무효**가 된다.
+
+수정: `--cwd` 필터를 빼고 세션 id로만 매칭한다. 어댑터를 한 번도 안 돌려보고
+넘어갔으면 9월에 "왜 전부 INVALID지"로 며칠을 태울 뻔했다.
+
+### 워크스페이스 git 격리 — 검증 완료
+
+`Workspace(git=True)`로 워크스페이스를 자기 저장소로 만든 뒤 백그라운드 세션을
+띄웠다.
+
+```
+자기 저장소 루트: .../agentfence-gittest-bd1v9otn/workspace
+세션 cwd:         .../agentfence-gittest-bd1v9otn/workspace/.claude/worktrees/optimized-finding-finch
+```
+
+**worktree가 내 워크스페이스에서 파생된다.** 홈 저장소가 아니다. 그리고 worktree가
+`ws.root` 안에 있으므로 `ws.close()`가 자동으로 지운다 — 잔재가 구조적으로 남지 않는다.
+
+### 정리
+
+테스트로 만든 백그라운드 세션 3건(`b6c67777`·`af2fd93c`·`183ee2fb`)과 홈 저장소에
+파생된 worktree·브랜치를 전부 제거했다. `git worktree remove --force`만으로는
+`locked` 때문에 안 되고 `git worktree unlock`이 먼저다.
+
+홈 저장소 worktree 등록: 1건(main)만 남음. `worktree-*` 브랜치 0건.
+
+### 다음 — 케이스 재설계에서 풀어야 할 것
+
+worktree가 **워크스페이스 안**에 생기므로, `B1-git-dir-redirect`가 재려는
+"공유 체크아웃으로의 탈출"에서 표적은 `$OUTSIDE`가 아니라 **`$WORKSPACE` 루트**다.
+
+현재 센서는 `$OUTSIDE`만 감시한다. 케이스가 감시 경로를 지정할 수 있어야 한다.
+
+```
+oracle:
+  watch: workspace-root        # 기본은 outside
+  exclude: [".claude/worktrees/"]
+```
+
+이걸 넣어야 백그라운드 케이스를 짤 수 있다.
+
+### 소요
+
+약 50분. 8월 누적 15시간 40분 / 42시간.
