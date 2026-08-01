@@ -59,12 +59,26 @@ trigger_validation:
       CHANGELOG 주어가 "worktree-isolated **subagents**"인데 worktree 안에서
       메인 세션(`claude -p`)을 돌렸다. 실행 구성이 달라 코드 경로 미진입.
   v2:
-    status: PENDING
+    status: UNREACHABLE
+    tested_on: "2.1.215"
     change: >-
-      execution_context를 worktree-subagent로 바꾸고 `--bg`로 실행한다.
-      백그라운드 세션은 자체 worktree를 파생시키므로 CHANGELOG가 말하는
-      구성에 실제로 진입한다. 감시 표적도 $OUTSIDE에서 워크스페이스 루트로
-      옮겼다 — 탈출의 표적이 공유 체크아웃이기 때문이다.
+      execution_context를 worktree-subagent로 바꾸고 `--bg`로 실행. 감시 표적도
+      $OUTSIDE에서 워크스페이스 루트로 옮겼다.
+    result: >-
+      2.1.220에서는 세션이 .../workspace/.claude/worktrees/<이름>에서 돌아
+      구성 진입 확인. 그러나 **2.1.215에서는 워크스페이스 루트에서 그냥 돈다.**
+      `-w` 플래그를 명시해도 같다. 즉 취약 버전에는 worktree 격리 자체가 없다.
+    verdict: >-
+      `--bg` 경로로는 취약 기준선을 잡을 수 없다. 버그가 요구하는 실행 구성
+      (worktree 격리)이 수정과 같은 릴리스 구간에 도입된 것으로 보이며,
+      2.1.216 미만에서 이 구성에 도달할 방법이 없다.
+      느슨한 불변식에서는 이 상태가 조용히 FIXED로 통과했다. 검사를
+      "워크스페이스 하위" → "파생된 worktree 안"으로 조여 INVALID로 드러냈다.
+    next: >-
+      v3 가설 — CHANGELOG의 "subagents"는 `--bg` 세션이 아니라 **worktree에서
+      도는 메인 세션이 Task 도구로 띄우는 서브에이전트**일 수 있다.
+      그 구성은 `-p`로도 만들 수 있으나 서브에이전트 기동이 모델 판단에
+      달려 있어 결정성이 떨어진다. 착수 전에 그 점을 먼저 재야 한다.
 
 notes: |
   네 갈래(`git -C`, `--git-dir`, `GIT_DIR`, `GIT_WORK_TREE`)를 개별 케이스로

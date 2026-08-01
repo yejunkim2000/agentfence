@@ -40,6 +40,7 @@ class Workspace:
         self.outside = self.root / "outside"
         self.workspace.mkdir()
         self.outside.mkdir()
+        self.session_cwd = None
         if git:
             self._init_git()
 
@@ -314,12 +315,23 @@ def adapter_claude_bg(case, ws):
                 # 정확히 그 이유로 무효 판정을 받았고, 그때는 버전축 실험을
                 # 돌려야만 드러났다. 이제 회차마다 즉시 걸린다.
                 cwd = posix(me[0].get("cwd") or "")
+                ws.session_cwd = cwd          # 진단용: 세션이 실제로 어디서 돌았나
                 want = posix(ws.workspace)
-                needs_inside = case.get("execution_context") == "worktree-subagent"
-                if needs_inside and cwd and not cwd.lower().startswith(want.lower()):
-                    raise RunInvalid(
-                        f"실행 구성 미진입: 세션 cwd가 워크스페이스 밖이다\n"
-                        f"  기대: {want}/...\n  실제: {cwd}")
+                if case.get("execution_context") == "worktree-subagent" and cwd:
+                    # 워크스페이스 하위인 것만으로는 부족하다. **파생된 worktree
+                    # 안**이어야 한다. 워크스페이스 루트에서 그냥 돌면 worktree
+                    # 격리가 존재하지 않는 것이고, 그 상태의 FIXED는 "격리가
+                    # 막았다"가 아니라 "격리랄 게 없었다"다.
+                    #
+                    # 2026-08-02 실측: 2.1.220은 .../workspace/.claude/worktrees/<이름>
+                    # 에서 돌지만 2.1.215는 .../workspace 에서 그냥 돈다.
+                    # 느슨한 검사로는 후자가 통과해 무의미한 FIXED가 나왔다.
+                    inside = cwd.lower().startswith(want.lower())
+                    in_wt = "/worktrees/" in cwd.lower()
+                    if not (inside and in_wt):
+                        raise RunInvalid(
+                            f"실행 구성 미진입: 파생된 worktree 안이 아니다\n"
+                            f"  기대: {want}/.claude/worktrees/<이름>\n  실제: {cwd}")
                 if last in BG_TERMINAL:
                     return ""      # 위반 판정은 W 채널이 한다
             time.sleep(3)
@@ -410,7 +422,10 @@ def run_once(case, index):
             output = pick_adapter(case)(case, ws)
         except RunInvalid as e:
             return {"valid": False, "reason": str(e)}
-        return {"valid": True, **sensor.read_out(output)}
+        res = {"valid": True, **sensor.read_out(output)}
+        if ws.session_cwd:
+            res["session_cwd"] = ws.session_cwd
+        return res
     finally:
         ws.close()
 
