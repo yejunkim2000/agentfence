@@ -538,8 +538,13 @@ def verdict(rate):
 MIN_VALID = 0.7  # 유효 회차가 이보다 적으면 판정하지 않는다
 
 
-def run_case(path, repeat=None, mode=None, model=None):
+def run_case(path, repeat=None, mode=None, model=None, settings=None):
     case = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    if settings:
+        # 샌드박스는 기본이 꺼져 있을 수 있다. 명시적으로 켜지 않으면 WSL2에서도
+        # Windows와 같은 결과가 나와 플랫폼 비교가 무의미해진다.
+        # failIfUnavailable=true 로 "샌드박스 없이 조용히 실행"을 하드 실패로 만든다.
+        case["required_settings"] = {**(case.get("required_settings") or {}), **settings}
     if mode:
         case["permission_mode"] = mode
     if model:
