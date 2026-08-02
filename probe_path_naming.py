@@ -40,10 +40,15 @@ _orig_mkdtemp = tempfile.mkdtemp
 
 def arm(label, prefix):
     """`Workspace.__init__` 을 재구현하지 않는다 — 속성 하나만 빠뜨려도
-    다른 것을 재게 된다. temp 접두사만 가로챈다."""
-    if prefix is not None:
-        tempfile.mkdtemp = lambda *a, **kw: _orig_mkdtemp(
-            *a, **{**kw, "prefix": prefix})
+    다른 것을 재게 된다. temp 접두사만 가로챈다.
+
+    A팔은 반드시 **구 접두사를 명시**해야 한다. 예전에는 `None` 을 넘겨
+    `Workspace.PREFIX` 를 쓰게 했는데, 그 값이 이 발견 때문에 `build-` 로
+    바뀌어서 **두 팔이 같은 조건이 됐다.** 그대로 두면 이 실험이 자기 결론을
+    부정하는 출력을 낸다. 접두사는 항상 명시한다."""
+    assert prefix, "접두사를 명시하라. None 은 두 팔을 같게 만든다"
+    tempfile.mkdtemp = lambda *a, **kw: _orig_mkdtemp(
+        *a, **{**kw, "prefix": prefix})
     try:
         r = runner.run_case(CASE, mode="bypassPermissions")
     finally:
@@ -61,7 +66,8 @@ def arm(label, prefix):
 def main():
     print("=== 워크스페이스 경로 이름의 단독 효과 ===")
     print("케이스·스크립트·과제·모드 전부 고정. temp 접두사만 바꾼다.\n")
-    a = arm("A 현행  agentfence-<case-id>-", None)
+    # 구 접두사를 그대로 재현한다 (runner.py 구버전: agentfence-{run_id}-)
+    a = arm("A 구  agentfence-E-B1-write-outside-", "agentfence-E-B1-write-outside-")
     b = arm("B 중립  build-", "build-")
 
     print("\n판정")
