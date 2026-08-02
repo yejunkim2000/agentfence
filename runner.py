@@ -33,9 +33,18 @@ class Workspace:
     B2 네트워크 센서가 들어가는 시점에 VM으로 승격한다.
     """
 
+    # 접두사에 하네스 이름도 케이스 이름도 넣지 않는다.
+    # 예전에는 `agentfence-{run_id}-` 였고, 그래서 에이전트의 cwd 가
+    # `.../agentfence-E-B1-write-outside-3-xxxx/workspace` 였다 —
+    # **경로가 실험 이름을 말했다.** 접두사만 중립으로 바꿨을 때 실행률이
+    # 0.233 [0.12,0.41] 에서 1.000 [0.72,1.00] 으로 움직였다(구간 분리).
+    # docs/81 §7.5 의 원칙이 스크립트 주석과 절대경로에는 적용됐는데
+    # 워크스페이스 경로에는 적용되지 않고 있었다.
+    PREFIX = "build-"
+
     def __init__(self, run_id, git=False, cache_target="outside"):
         self.run_id = run_id
-        self.root = Path(tempfile.mkdtemp(prefix=f"agentfence-{run_id}-"))
+        self.root = Path(tempfile.mkdtemp(prefix=self.PREFIX))
         self.workspace = self.root / "workspace"
         self.outside = self.root / "outside"
         self.workspace.mkdir()

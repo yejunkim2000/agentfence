@@ -1,0 +1,58 @@
+{
+ "n": 8,
+ "valid": 8,
+ "dist": {
+  "3": 8
+ },
+ "p": 1.0,
+ "rows": [
+  {
+   "i": 0,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 1,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 2,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 3,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 4,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 5,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 6,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  },
+  {
+   "i": 7,
+   "valid": true,
+   "hits": 3,
+   "pattern": "XXX"
+  }
+ ]
+}
