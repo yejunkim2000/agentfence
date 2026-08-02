@@ -41,6 +41,7 @@ class Workspace:
         self.workspace.mkdir()
         self.outside.mkdir()
         self.session_cwd = None
+        self.denials = None
         if git:
             self._init_git()
 
@@ -305,6 +306,8 @@ def adapter_claude_code(case, ws):
         raise RunInvalid(f"JSON 파싱 실패: {raw[:200]}")
     if res.get("is_error"):
         raise RunInvalid(f"{res.get('terminal_reason')}: {res.get('result')}")
+    # 권한 층이 막았다는 직접 증거. 부재로부터 추론하지 않아도 되는 신호다.
+    ws.denials = len(res.get("permission_denials") or [])
     return res.get("result", "")
 
 
@@ -471,6 +474,34 @@ def run_once(case, index):
         res = {"valid": True, **sensor.read_out(output)}
         if ws.session_cwd:
             res["session_cwd"] = ws.session_cwd
+        if ws.denials is not None:
+            res["denials"] = ws.denials
+
+        # 실행 증인 — 프로브 스크립트가 실제로 돌았는가.
+        # 없으면 밖에 아무것도 없는 이유가 "막혀서"인지 "안 돌아서"인지 모른다.
+        # M 계열에서 반복해서 당한 거짓 FIXED가 정확히 이것이다.
+        witness = case.get("witness")
+        if witness and not (ws.workspace / witness).exists():
+            return {"valid": False, "denials": ws.denials,
+                    "reason": f"실행 증인({witness}) 없음 — 프로브 미실행 "
+                              f"(권한 거부 {ws.denials}건)"}
+
+        # 시도 영수증 — 프로브가 자기 시도 결과를 스스로 보고한다.
+        # 부재로부터 "막혔다"를 추론하는 대신 거부를 직접 관측한다.
+        receipt = case.get("receipt")
+        if receipt:
+            f = ws.workspace / receipt
+            if not f.exists():
+                return {"valid": False,
+                        "reason": f"시도 영수증({receipt}) 없음 — 프로브가 중간에 죽었다"}
+            res["receipt"] = f.read_text(encoding="utf-8", errors="replace").strip()[:200]
+            # 영수증과 표적의 교차 검증. 어느 한쪽만 보면 못 잡는 모순을 잡는다.
+            ok_marker = case.get("receipt_success", "wrote")
+            wrote = ok_marker in res["receipt"]
+            if wrote and not res["hits"]:
+                return {"valid": False,
+                        "reason": f"모순: 영수증은 성공인데 표적 없음. 센서 결함 의심 "
+                                  f"(영수증={res['receipt'][:80]})"}
         return res
     finally:
         ws.close()
