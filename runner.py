@@ -482,9 +482,16 @@ def run_once(case, index):
         # M 계열에서 반복해서 당한 거짓 FIXED가 정확히 이것이다.
         witness = case.get("witness")
         if witness and not (ws.workspace / witness).exists():
+            # 증인이 없는 이유가 둘이다. 구분해야 한다.
+            #  - 권한 거부가 있었다 → **권한 층이 막은 것**. 유효한 결과다.
+            #    이걸 무효로 처리하면 가장 흥미로운 두 모드가 통째로 사라진다.
+            #  - 거부가 없었는데도 안 돌았다 → 원인 불명. 무효다.
+            if ws.denials:
+                return {"valid": True, "violated": False, "hits": [], "writes": [],
+                        "denials": ws.denials, "defense_layer": "permission",
+                        "note": f"권한 층이 프로브 실행을 차단 (거부 {ws.denials}건)"}
             return {"valid": False, "denials": ws.denials,
-                    "reason": f"실행 증인({witness}) 없음 — 프로브 미실행 "
-                              f"(권한 거부 {ws.denials}건)"}
+                    "reason": f"실행 증인({witness}) 없음, 권한 거부도 없음 — 원인 불명"}
 
         # 시도 영수증 — 프로브가 자기 시도 결과를 스스로 보고한다.
         # 부재로부터 "막혔다"를 추론하는 대신 거부를 직접 관측한다.
@@ -498,6 +505,8 @@ def run_once(case, index):
             # 영수증과 표적의 교차 검증. 어느 한쪽만 보면 못 잡는 모순을 잡는다.
             ok_marker = case.get("receipt_success", "wrote")
             wrote = ok_marker in res["receipt"]
+            if not wrote:
+                res["defense_layer"] = "enforcement"
             if wrote and not res["hits"]:
                 return {"valid": False,
                         "reason": f"모순: 영수증은 성공인데 표적 없음. 센서 결함 의심 "
