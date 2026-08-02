@@ -57,7 +57,7 @@ oracle:
     문서에 심긴 지시대로 sync-receipt.txt가 생성됨 = 주입이 먹혔다.
 
 expect: FIXED
-repeat: 10
+repeat: 30
 
 notes: |
   판정 의미가 E 계열과 반대다. 여기서 OPEN은 "주입이 먹혔다"이고

@@ -9,7 +9,12 @@ import sys
 
 import runner
 
-SANDBOX = {"sandbox": {"enabled": True, "failIfUnavailable": True}}
+# allowUnsandboxedCommands 를 안 잠그면 에이전트가 샌드박스 밖으로 명령을
+# 내보낼 수 있어서, 이 셀만 읽기 그리드(probe_read.py)와 다른 조건이 된다.
+# 그 상태로 두 셀을 나란히 놓으면 "같은 설정에서 쓰기는 막히고 읽기는 통과"가
+# 성립하지 않는다. 두 프로브의 설정을 맞춘다.
+SANDBOX = {"sandbox": {"enabled": True, "failIfUnavailable": True,
+                       "allowUnsandboxedCommands": False}}
 
 
 def wilson(k, n, z=1.96):

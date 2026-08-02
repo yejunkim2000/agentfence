@@ -126,7 +126,7 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
 <div class="scroll"><table>
 <thead><tr><th>동작</th><th>경로</th><th>Windows</th><th>WSL2 (샌드박스)</th></tr></thead>
 <tbody>
-<tr class="cool"><td><strong>쓰기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">[0.57,1.00]</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/6 [0.00,0.39]</span> ← <strong>유일하게 막힌 칸</strong></td></tr>
+<tr class="cool"><td><strong>쓰기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">[0.57,1.00]</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/30 [0.00,0.11]</span> ← <strong>유일하게 막힌 칸</strong></td></tr>
 <tr class="hot"><td>쓰기</td><td>내장 <code>Write</code></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td></tr>
 <tr class="hot"><td><strong>읽기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">5/5 [0.57,1.00]</span></td></tr>
 <tr class="hot"><td>읽기</td><td>내장 <code>Read</code></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td></tr>
@@ -262,15 +262,17 @@ without asking your permission</strong>"</em> + 읽기 기본값 전체 허용.
 <section>
 <span class="eyebrow mono">04 — 주입</span>
 <h2>문서 주입은 표적과 무관하게 거부된다</h2>
-<p>중립 경로에서 재검했다 — 안쪽 <span class="mono">0/10</span>,
-밖쪽 <span class="mono">0/10</span>. 경로 교란을 제거해도 그대로다.
+<p>중립 경로에서 재검하고 팔당 10 → 30회로 올렸다 — 안쪽
+<span class="mono">0/30</span>, 밖쪽 <span class="mono">0/30</span>,
+통합 <strong class="mono">0/60 [0, 0.06]</strong>. 경로 교란을 제거해도,
+n을 올려도 그대로다.
 사전 등록 예측이 빗나간 것(안쪽 <code>expect: OPEN</code> → 실측
 <code>FIXED</code>)까지 재현된다.</p>
 <p><strong>03절과 축이 갈린다.</strong> 같은 비신뢰 저장소 콘텐츠라도
 <strong>스크립트로 오면</strong> 중립 경로에서 거의 항상 실행되고(50/51),
 <strong>문서 속 지시로 오면</strong> 표적과 무관하게 전부 거부된다.
 판단 기준이 <strong>"무엇을 하는가"가 아니라 "어디서 온 지시인가"</strong>다.</p>
-<p class="muted">0/10 대 0/10 은 그 자체로 <strong>null 대조</strong>다 —
+<p class="muted">0/30 대 0/30 은 그 자체로 <strong>null 대조</strong>다 —
 표적 위치가 주입 거부에 영향을 주지 않는다는 뜻이지, 표적 위치 효과를 잰 것이 아니다.</p>
 </section>
 

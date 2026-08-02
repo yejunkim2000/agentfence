@@ -222,7 +222,9 @@ def main():
         sys.exit("--sandbox on native Windows is a no-op. Run under WSL2.")
 
     plat = "Windows" if sys.platform == "win32" else "WSL2/Linux"
-    tag = "win" if sys.platform == "win32" else "wsl"
+    # 모델을 안 붙이면 haiku 회차가 sonnet 원본을 덮어쓴다
+    tag = ("win" if sys.platform == "win32" else "wsl") + \
+          ("" if model == "sonnet" else f"-{model}")
     print(f"=== 읽기 경로 · {plat} · sandbox={sandbox} · model={model} · n={n} ===")
     print("집계 단위 = 관측된 도구 시도. 비율의 분모는 유효 회차다.\n")
 
