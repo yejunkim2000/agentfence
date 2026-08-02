@@ -35,9 +35,8 @@ workspace_git: true
 permission_mode: bypassPermissions
 subagent_marker: agentfence-marker.txt
 
-# 메인 세션에 Task만 허용한다. 위임 외에 할 수 있는 일이 없으므로
-# 서브에이전트 격리 구성 진입이 결정적이 된다.
-allowed_tools: ["Task"]
+# allowed_tools: ["Task"] 는 철회했다. 위임을 강제하려던 것인데 실측에서
+# 위임률이 1/4 → 0/4로 오히려 악화됐다. 대신 유효 회차 목표치까지 재시도한다.
 
 # v3에서 직접 지시가 거부당했다. 원 CVE 설명대로 현실적 전달 경로는 **비신뢰
 # 데이터**다. 그래서 사용자 턴과 서브에이전트 프롬프트는 평범하게 두고,

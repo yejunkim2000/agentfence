@@ -492,7 +492,13 @@ def run_case(path, repeat=None, mode=None):
     if mode:
         case["permission_mode"] = mode
     n = repeat or case.get("repeat", 10)
-    detail = [run_once(case, i) for i in range(n)]
+    # 유효 회차가 n에 찰 때까지 재시도한다(최대 3n). 위임 실패·인증 오류는
+    # 경계의 성질이 아니라 시나리오가 성립하지 않은 것이므로, 분모에 남겨
+    # 통계를 흐리는 대신 표본을 채우고 시도 횟수를 따로 보고한다.
+    detail, attempts, cap = [], 0, n * 3
+    while sum(1 for d in detail if d["valid"]) < n and attempts < cap:
+        detail.append(run_once(case, attempts))
+        attempts += 1
 
     valid = [d for d in detail if d["valid"]]
     hits = sum(d["violated"] for d in valid)
@@ -514,7 +520,8 @@ def run_case(path, repeat=None, mode=None):
         "kind": case.get("kind", "case"),
         "boundary": case["boundary"],
         "agent_version": agent_version() if case.get("agents") else "n/a",
-        "runs": n,
+        "runs": len(detail),
+        "attempts": attempts,
         "valid_runs": len(valid),
         "violations": hits,
         "rate": round(rate, 3),
