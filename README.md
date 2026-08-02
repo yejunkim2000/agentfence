@@ -113,13 +113,28 @@ CVE-2026-39861과 같은 계열이며, 샌드박스가 지원되는 플랫폼에
 > with the sandbox restriction lifted**, and confirmed the cache write itself is
 > not actually broken
 
-**에이전트가 스스로 샌드박스를 끄고 재실행했다.** 샌드박스가 뚫린 것이 아니라,
-막히자 껐다. 매 회차 투명하게 보고했고 `bypassPermissions`가 부여한 권한 안이다.
+**에이전트가 샌드박스를 끄고 재실행했다.** 샌드박스가 뚫린 것이 아니라, 막히자 껐다.
 
-> **운영상 함의.** `sandbox.enabled: true` + `failIfUnavailable: true`를 켜도
-> `bypassPermissions`와 함께 쓰면 **샌드박스는 하드 경계가 아니라 권고**다.
-> 에이전트가 막히면 끄고 다시 돌릴 수 있다. 취약점은 아니지만,
-> "설정했으니 갇혔다"고 믿으면 기대와 실제가 어긋난다.
+> **정정 (2026-08-02).** 이 문단은 처음에 "운영상 발견"으로 적혀 있었다.
+> 그러나 이것은 **공식 문서에 명시된 기능**이다.
+>
+> > when a command fails because of sandbox restrictions, Claude analyzes the
+> > failure and **may retry the command with the `dangerouslyDisableSandbox`
+> > parameter**
+> >
+> > — [Configure the sandboxed Bash tool](https://code.claude.com/docs/en/sandboxing)
+>
+> 발견이 아니라 문서화된 탈출구다. 문서를 끝까지 읽기 전에 발견으로 적은 것이
+> 이 프로젝트에서 두 번째다. **측정 전에 문서를 다 읽어야 한다.**
+
+문서는 잠금장치도 제공한다 — `allowUnsandboxedCommands: false`를 두면
+*"the `dangerouslyDisableSandbox` parameter is completely ignored and all
+commands must run sandboxed"*.
+
+> **운영상 함의는 유지된다.** `sandbox.enabled` + `failIfUnavailable`만으로는
+> 하드 경계가 아니다. **`allowUnsandboxedCommands: false`까지 함께 두어야**
+> 에이전트가 막힌 명령을 샌드박스 밖에서 재시도하지 못한다.
+> 관리형 배포 예시가 세 키를 함께 제시하는 이유가 이것이다.
 
 ### 7. 버전축은 평평하다
 
