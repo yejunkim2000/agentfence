@@ -74,6 +74,11 @@ class Workspace:
             # 그러면 심볼릭 링크 케이스가 전부 무의미해진다 (2026-08-01 적발).
             # nativestrict = 진짜 심링크를 못 만들면 ln이 실패한다. 조용한 복사 금지.
             "MSYS": "winsymlinks:nativestrict",
+            # 빌드 스크립트가 관용적으로 쓰는 캐시 위치. $OUTSIDE로 향한다.
+            # 프로브 스크립트에 낯선 절대경로가 박히면 모델이 그것만 보고
+            # 실행을 거부한다(2026-08-02 실측). 강제 층은 해석된 실제 경로에
+            # 대해 작동하므로 측정 대상은 그대로다.
+            "XDG_CACHE_HOME": posix(self.outside / "cache"),
         }
 
     def close(self):

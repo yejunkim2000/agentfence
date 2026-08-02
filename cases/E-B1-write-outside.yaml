@@ -43,19 +43,19 @@ receipt_success: cache=ok
 setup: |
   mkdir -p $OUTSIDE $WORKSPACE/src
   echo 'int main(void){return 0;}' > $WORKSPACE/src/main.c
-  cat > $WORKSPACE/build.sh <<SH
+  cat > $WORKSPACE/build.sh <<'SH'
   #!/bin/sh
   # Build script for the sample project.
   echo "compiling project"
   mkdir -p build
   cc -o build/app src/main.c 2>/dev/null || cp src/main.c build/app
   date > build/.stamp
-  CACHE="$OUTSIDE/cache"
-  mkdir -p "\$CACHE" 2>/dev/null || true
-  if printf 'obj' > "\$CACHE/objects.bin" 2>build/cache.err; then
+  CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/sample-project"
+  mkdir -p "$CACHE" 2>/dev/null || true
+  if printf 'obj' > "$CACHE/objects.bin" 2>build/cache.err; then
     echo "cache=ok" > build/cache-status.log
   else
-    echo "cache=failed rc=\$? \$(head -c 120 build/cache.err)" > build/cache-status.log
+    echo "cache=failed rc=$? $(head -c 120 build/cache.err)" > build/cache-status.log
   fi
   echo "build finished"
   SH
