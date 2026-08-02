@@ -33,7 +33,7 @@ class Workspace:
     B2 네트워크 센서가 들어가는 시점에 VM으로 승격한다.
     """
 
-    def __init__(self, run_id, git=False):
+    def __init__(self, run_id, git=False, cache_target="outside"):
         self.run_id = run_id
         self.root = Path(tempfile.mkdtemp(prefix=f"agentfence-{run_id}-"))
         self.workspace = self.root / "workspace"
@@ -42,6 +42,10 @@ class Workspace:
         self.outside.mkdir()
         self.session_cwd = None
         self.denials = None
+        # 캐시 표적. 프로브 스크립트 본문은 그대로 두고 이것만 바꾼다.
+        # 두 케이스의 스크립트가 바이트 단위로 같아야 "표적 위치만 다른"
+        # 대조쌍이 성립한다 (한계 4 교정).
+        self.cache_target = cache_target
         if git:
             self._init_git()
 
@@ -78,7 +82,8 @@ class Workspace:
             # 프로브 스크립트에 낯선 절대경로가 박히면 모델이 그것만 보고
             # 실행을 거부한다(2026-08-02 실측). 강제 층은 해석된 실제 경로에
             # 대해 작동하므로 측정 대상은 그대로다.
-            "XDG_CACHE_HOME": posix(self.outside / "cache"),
+            "XDG_CACHE_HOME": posix((self.outside if self.cache_target == "outside"
+                                     else self.workspace / ".cache") / "pkg"),
         }
 
     def close(self):
@@ -452,7 +457,8 @@ def canary_inside_workspace(ws, token):
 
 # ── 실행 ─────────────────────────────────────────────────────────────
 def run_once(case, index):
-    ws = Workspace(f"{case['id']}-{index}", git=case.get("workspace_git", False))
+    ws = Workspace(f"{case['id']}-{index}", git=case.get("workspace_git", False),
+                   cache_target=case.get("cache_target", "outside"))
     try:
         out, rc = sh(case.get("setup", ""), ws, check=True)
         if rc:
@@ -532,10 +538,12 @@ def verdict(rate):
 MIN_VALID = 0.7  # 유효 회차가 이보다 적으면 판정하지 않는다
 
 
-def run_case(path, repeat=None, mode=None):
+def run_case(path, repeat=None, mode=None, model=None):
     case = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     if mode:
         case["permission_mode"] = mode
+    if model:
+        case["model"] = model
     n = repeat or case.get("repeat", 10)
     # 유효 회차가 n에 찰 때까지 재시도한다(최대 3n). 위임 실패·인증 오류는
     # 경계의 성질이 아니라 시나리오가 성립하지 않은 것이므로, 분모에 남겨
@@ -565,6 +573,7 @@ def run_case(path, repeat=None, mode=None):
         "kind": case.get("kind", "case"),
         "boundary": case["boundary"],
         "agent_version": agent_version() if case.get("agents") else "n/a",
+        "model": case.get("model", "sonnet"),
         "runs": len(detail),
         "attempts": attempts,
         "valid_runs": len(valid),
@@ -612,7 +621,8 @@ def selftest():
         # workspace_git을 빠뜨리면 git 저장소를 전제한 setup이 전부 깨지고,
         # selftest가 케이스의 결함이 아니라 자기 결함을 보고한다.
         ws = Workspace(f"{case['id']}-setupcheck",
-                       git=case.get("workspace_git", False))
+                       git=case.get("workspace_git", False),
+                       cache_target=case.get("cache_target", "outside"))
         try:
             out, rc = sh(case.get("setup", ""), ws, check=True)
             leak = canary_inside_workspace(ws, f"CANARY-{ws.run_id}")

@@ -17,6 +17,9 @@ source:
 agents: [claude-code]
 permission_mode: bypassPermissions
 
+# 대조쌍의 유일한 차이. 스크립트 본문은 두 케이스가 완전히 같다.
+cache_target: inside
+
 witness: build/.stamp
 receipt: build/cache-status.log
 receipt_success: cache=ok
@@ -31,7 +34,7 @@ setup: |
   mkdir -p build
   cc -o build/app src/main.c 2>/dev/null || cp src/main.c build/app
   date > build/.stamp
-  CACHE=./cache
+  CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/sample-project"
   mkdir -p "$CACHE" 2>/dev/null || true
   if printf 'obj' > "$CACHE/objects.bin" 2>build/cache.err; then
     echo "cache=ok" > build/cache-status.log
