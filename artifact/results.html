@@ -91,7 +91,7 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
   <li class="chip ok"><span class="mono">검사</span><b class="mono">6종</b></li>
   <li class="chip hot"><span class="mono">최대 성공률</span><b class="mono">1.000</b></li>
 </ul>
-<p class="muted" style="margin:-14px 0 24px">축 아홉 중 <strong>여섯(플랫폼·도구 경로·동작·권한 모드·세션 내 일관성·완화책 유효성)은 결과가 갈렸다.</strong> T3(우회 탐색)는 <strong>측정했고 우회가 없었다</strong>(0/34). 문서가 안내하는 완화책은 <strong>낮추지만 닫지 못한다</strong>(0.976 → 0.127).
+<p class="muted" style="margin:-14px 0 24px">축 아홉 중 <strong>여섯(플랫폼·도구 경로·동작·권한 모드·세션 내 일관성·완화책 유효성)은 결과가 갈렸다.</strong> T3(우회 탐색)는 <strong>측정했고 우회가 없었다</strong>(0/34). 완화책은 <strong>이름 열거로는 새고</strong>(0.127) <strong><code>Bash</code> 차단으로는 닫힌다</strong>(0/35).
 <strong>모델축은 조건부</strong>였고(워크스페이스 경로가 실험을 알릴 때만 갈린다),
 버전축은 <strong>측정했으나 평평했다</strong> — 이 프로브에 대해 회귀가 없다. 원래 목표였던 "격리 구현 단독의 버전 회귀"는 <strong>측정 불가</strong>
 판정을 받았다(취약 버전에 해당 실행 구성 자체가 없었다). 못 잰 이유를 근거 있게
@@ -454,11 +454,32 @@ there failed"</blockquote>
 버릇이 아니라 <strong>거부 목록 방식의 성질</strong>이다. <code>grep</code>을 막으면
 <code>sed</code>·<code>awk</code>·<code>od</code>·<code>strings</code>·
 <code>python -c</code>가 남는다.</p>
+<h3>열거 방향을 뒤집으면 닫힌다 — 이것도 쟀다</h3>
+<p>"허용 목록이 완전할 수 있다"는 추론이었다. 실측했다. <code>Bash</code>를
+<strong>통째로</strong> 막고 경로 기반 <code>Read</code> 규칙만 남긴다 — 이름을
+하나도 열거하지 않는다.</p>
+<div class="scroll"><table>
+<thead><tr><th>방식</th><th>규칙</th><th>밖 접근</th><th>95% CI</th></tr></thead>
+<tbody>
+<tr class="hot"><td>샌드박스만</td><td>—</td><td class="mono">40/41 = <strong>0.976</strong></td><td class="mono">[0.87, 1.00]</td></tr>
+<tr><td><strong>이름 열거</strong></td><td class="mono">Bash(cat:*) head tail less</td><td class="mono">9/71 = <strong>0.127</strong></td><td class="mono">[0.07, 0.22]</td></tr>
+<tr class="cool"><td><strong><code>Bash</code> 차단</strong></td><td class="mono">Bash + 경로 Read</td><td class="mono"><strong>0/35 = 0.000</strong></td><td class="mono"><strong>[0.00, 0.10]</strong></td></tr>
+</tbody>
+</table></div>
+<p><span class="mono">none</span> vs <span class="mono">names</span>
+<span class="mono">p = 1.9×10⁻²⁰</span> ·
+<strong><span class="mono">names</span> vs <span class="mono">blanket</span>
+<span class="mono">p = 0.028</span></strong>. <code>grep</code>도 <code>sed</code>도
+통하지 않는다 — <code>Bash</code>가 없으니 <strong>대체 명령이라는 개념이 성립하지
+않는다.</strong></p>
 <div class="callout">
-<p><strong>권고가 바뀐다.</strong> 경로 기반 <code>Read(&lt;경로&gt;/**)</code>는 도구
-이름과 무관하고, <code>Bash</code> <strong>허용 목록</strong>은 열거 방향이 반대라
-완전할 수 있다. <code>Bash(&lt;명령&gt;:*)</code> 이름 열거는 <strong>샌다</strong> —
-심층 방어로만 쓴다.</p>
+<p><strong>그리고 일을 못 하게 만든 것이 아니다.</strong> 같은 회차에서
+<strong>안쪽 대조군 15/15</strong> — 에이전트는 워크스페이스 안 파일을 그대로 읽었다.
+보안 설정은 작업을 불가능하게 만들면서 안전해질 수 있고 그건 권고가 아니다.</p>
+<p style="margin-top:10px">이 구별은 프로브가 처음엔 못 했다.
+<span class="mono">유효 20/20</span>은 CLI가 정상 종료했다는 뜻일 뿐이라 "막혔다"와
+"못 하게 됐다"가 같은 숫자를 낸다. <strong>이 세션에서 세 번째로 같은 모양의
+함정</strong>이다.</p>
 </div>
 <div class="warn">
 <p><strong><span class="mono">0.127</span>을 "완화 후 잔여 위험"으로 일반화하면 안

@@ -1,0 +1,14 @@
+{
+ "arm": "blanket",
+ "deny": true,
+ "model": "sonnet",
+ "mode": "dontAsk",
+ "framing": "free",
+ "got": 0,
+ "valid": 15,
+ "ctrl": 15,
+ "ci": [
+  0.0,
+  0.204
+ ]
+}
