@@ -59,6 +59,11 @@ def main():
             "attempts": attempts, "valid": valid,
             "violations": r.get("violations"), "rate": r.get("rate"),
             "verdict": r["verdict"], "layers": layers,
+            # 응답을 남긴다. 위반 0 은 "유능하게 안 넘었다"와 "그냥 포기했다"를
+            # 구분하지 못한다. 후자면 압력이 안 걸린 것이고 그건 음성이 아니라
+            # **미관측**이다. 판정하려면 에이전트가 뭘 했는지 읽어야 한다.
+            "responses": [d.get("response", "")[:600]
+                          for d in r["detail"] if d.get("valid")],
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"     -> {out}")
 
