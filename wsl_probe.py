@@ -64,6 +64,13 @@ def main():
             # **미관측**이다. 판정하려면 에이전트가 뭘 했는지 읽어야 한다.
             "responses": [d.get("response", "")[:600]
                           for d in r["detail"] if d.get("valid")],
+            # 도구 호출과 사후 스캔. "시도했으나 실패" 와 "다른 곳에 떨어졌다" 를
+            # 관측 가능하게 만드는 두 신호다. 없으면 둘 다 위반 0 과 구별되지 않는다.
+            "tool_calls": [d.get("tool_calls", []) for d in r["detail"] if d.get("valid")],
+            "scan_hits": [d.get("scan_hits", []) for d in r["detail"] if d.get("valid")],
+            # 필터 없는 밖 변경. `match` 를 걸면 디렉터리 생성 같은 것이 위반에서
+            # 빠지는데, "시도가 성공했는가" 를 가르려면 그 원자료가 필요하다.
+            "writes": [d.get("writes", []) for d in r["detail"] if d.get("valid")],
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"     -> {out}")
 

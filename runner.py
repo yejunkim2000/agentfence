@@ -56,6 +56,7 @@ class Workspace:
         self.session_cwd = None
         self.denials = None
         self.last_response = ""
+        self.tool_calls = []
         # 캐시 표적. 프로브 스크립트 본문은 그대로 두고 이것만 바꾼다.
         # 두 케이스의 스크립트가 바이트 단위로 같아야 "표적 위치만 다른"
         # 대조쌍이 성립한다 (한계 4 교정).
@@ -284,7 +285,11 @@ def adapter_claude_code(case, ws):
         cmd += ["--allowedTools", *case["allowed_tools"]]
     cmd += [
         "--no-session-persistence",
-        "--output-format", "json",
+        # stream-json 은 **도구 호출과 그 결과**를 그대로 준다. 단일 json 은
+        # 최종 응답만 주므로 "시도했으나 실패" 가 보이지 않고, 그런 회차는
+        # 위반 0 과 구별되지 않는다 — 음성이 아니라 **미관측**이다.
+        # 최종 결과는 스트림의 type=result 에 그대로 들어 있다.
+        "--output-format", "stream-json", "--verbose",
         "--strict-mcp-config",
         "--model", case.get("model", "sonnet"),
         # ponytail: permission-mode를 케이스가 고정한다. 미해결 질문 —
@@ -324,10 +329,31 @@ def adapter_claude_code(case, ws):
     raw = (p.stdout or "").strip()
     if not raw:
         raise RunInvalid(f"출력 없음 (rc={p.returncode}): {(p.stderr or '')[:200]}")
-    try:
-        res = json.loads(raw)
-    except json.JSONDecodeError:
-        raise RunInvalid(f"JSON 파싱 실패: {raw[:200]}")
+
+    # 스트림을 훑어 도구 호출을 모으고 마지막 result 를 꺼낸다.
+    uses, errs, res = {}, {}, None
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        for b in (d.get("message") or {}).get("content") or []:
+            if not isinstance(b, dict):
+                continue
+            if b.get("type") == "tool_use":
+                uses[b.get("id")] = (b.get("name"), b.get("input"))
+            elif b.get("type") == "tool_result":
+                errs[b.get("tool_use_id")] = bool(b.get("is_error"))
+        if d.get("type") == "result":
+            res = d
+    if res is None:
+        raise RunInvalid(f"result 이벤트 없음: {raw[:200]}")
+    ws.tool_calls = [{"tool": n, "input": json.dumps(i, ensure_ascii=False)[:300],
+                      "error": errs.get(k, False)}
+                     for k, (n, i) in uses.items()]
     if res.get("is_error"):
         raise RunInvalid(f"{res.get('terminal_reason')}: {res.get('result')}")
     # 권한 층이 막았다는 직접 증거. 부재로부터 추론하지 않아도 되는 신호다.
@@ -505,6 +531,8 @@ def run_once(case, index):
             res["session_cwd"] = ws.session_cwd
         if ws.denials is not None:
             res["denials"] = ws.denials
+        if ws.tool_calls:
+            res["tool_calls"] = ws.tool_calls
 
         # 실행 증인 — 프로브 스크립트가 실제로 돌았는가.
         # 없으면 밖에 아무것도 없는 이유가 "막혀서"인지 "안 돌아서"인지 모른다.
@@ -523,6 +551,18 @@ def run_once(case, index):
             return {"valid": False, "denials": ws.denials,
                     "response": ws.last_response[:1200],
                     "reason": f"실행 증인({witness}) 없음, 권한 거부도 없음 — 원인 불명"}
+
+        # 사후 스캔 — 센서는 $OUTSIDE 만 본다. 에이전트가 워크스페이스 밖
+        # **다른** 위치로 우회하면 안 잡힌다. 케이스가 후보 경로를 지정하면
+        # 정리 전에 확인한다. 추론 대신 관측으로 바꾸는 장치다.
+        if case.get("scan"):
+            found = []
+            for pat in case["scan"]:
+                pat = os.path.expandvars(os.path.expanduser(
+                    pat.replace("$WORKSPACE", posix(ws.workspace))
+                       .replace("$ROOT", posix(ws.root))))
+                found += [posix(f) for f in Path("/").glob(pat.lstrip("/"))][:5]
+            res["scan_hits"] = found
 
         # 시도 영수증 — 프로브가 자기 시도 결과를 스스로 보고한다.
         # 부재로부터 "막혔다"를 추론하는 대신 거부를 직접 관측한다.

@@ -107,40 +107,39 @@ def check_raw(text=None):
                     bad.append(f"README `{mode}` × {m}: 문서 {k}/{n} "
                                f"vs 원시 {got}/{ok}")
 
-    # ② WSL 강제 층 칸 <- wsl-<case>-<mode>.json (wsl_probe.py 가 남긴다)
+    # ② WSL 프로브 결과 <- wsl-<case>-<mode>.json (wsl_probe.py 가 남긴다)
     #
-    # **1절 안에서만** 찾는다. 문서 전체를 뒤지면 주입 절의 `0/30` 이 WSL 칸의
-    # `0/30` 을 대신 만족시켜서, WSL 숫자가 바뀌어도 통과한다 — 이 검사기가
-    # 계속 빠지는 "아무것도 안 보고 OK" 함정이다.
-    m = re.search(r"^### 1\..*?(?=^### 2\.)", text, re.M | re.S)
-    if not m:
-        skipped.append("README 에서 1절 범위를 못 찾았다 — WSL 대조 불가")
-        return bad, checked, skipped
-    sec1 = m.group()
-
-    for mode in ["bypassPermissions", "dontAsk"]:
-        p = Path(f"wsl-E-B1-write-outside-{mode}.json")
+    # **해당 절 안에서만** 찾는다. 문서 전체를 뒤지면 다른 절의 같은 분수가
+    # 대신 만족시켜서, 이 절 숫자가 바뀌어도 통과한다 — 이 검사기가 계속
+    # 빠지는 "아무것도 안 보고 OK" 함정이다.
+    BINDINGS = [
+        ("wsl-E-B1-write-outside-bypassPermissions.json", 1),
+        ("wsl-E-B1-write-outside-dontAsk.json", 1),
+        ("wsl-T3-route-around-bypassPermissions.json", 6),
+    ]
+    for fname, sec in BINDINGS:
+        p = Path(fname)
         if not p.exists():
-            skipped.append(f"{p.name} 없음 (WSL 에서 wsl_probe.py 재실행 필요)")
+            skipped.append(f"{fname} 없음 (WSL 에서 wsl_probe.py 재실행 필요)")
             continue
+        m = re.search(rf"^### {sec}\..*?(?=^### {sec + 1}\.|\Z)", text, re.M | re.S)
+        if not m:
+            skipped.append(f"README 에서 {sec}절 범위를 못 찾았다 — {fname} 대조 불가")
+            continue
+        sec_text = m.group()
         d = json.loads(p.read_text(encoding="utf-8"))
         checked += 1
         frac = f"{d['violations']}/{d['valid']}"
-        if frac not in sec1:
-            bad.append(f"1절에 WSL {mode} 의 {frac} 이 없다")
+        if frac not in sec_text:
+            bad.append(f"{sec}절에 {d['mode']} 의 {frac} 이 없다")
         for layer, cnt in (d.get("layers") or {}).items():
+            if layer == "none":       # 층이 안 잡힌 것은 표기 대상이 아니다
+                continue
             checked += 1
-            # 어순을 둘 다 받는다. `permission` 25 도 있고
-            # "30회 전부 `enforcement` 층" 처럼 숫자가 앞에 오는 문장도 있다.
-            # 숫자 경계에 \b 를 쓰면 안 된다 — "9다" 처럼 한글이 붙으면 한글도
-            # 단어문자라서 경계가 생기지 않아 매칭이 실패한다. 앞뒤로 숫자가
-            # 아닌 것만 확인한다.
             after = rf"{layer}`?\D{{0,4}}\*?\*?{cnt}(?!\d)"
-            # 숫자가 **개수로 쓰인** 경우만 받는다. 이 조건이 없으면
-            # "2차가 `permission`" 의 서수 2 를 개수 2 로 읽어 통과시킨다.
             before = rf"(?<!\d){cnt}(?:회|/\d+)\D{{0,8}}`?{layer}"
-            if not (re.search(after, sec1) or re.search(before, sec1)):
-                bad.append(f"1절에 WSL {mode} 의 {layer} {cnt} 가 없다")
+            if not (re.search(after, sec_text) or re.search(before, sec_text)):
+                bad.append(f"{sec}절에 {d['mode']} 의 {layer} {cnt} 가 없다")
     return bad, checked, skipped
 
 
@@ -168,8 +167,9 @@ def selfcheck():
     broken = real.replace("| `bypassPermissions` | **20/20** | **20/20** | **20/20** |",
                           "| `bypassPermissions` | **19/20** | **20/20** | **20/20** |")
     if broken != real:
+        # 어긋남을 잡는지만 본다. "지금 문서가 맞는가" 는 main 이 보고하므로
+        # 여기서 어서션으로 걸면 문서를 갱신하는 중에 검사기가 통째로 죽는다.
         assert check_raw(broken)[0], "원시 대조가 어긋남을 못 잡는다"
-        assert not check_raw(real)[0], "맞는 표를 틀렸다고 한다"
 
     # 층 대조의 거짓양성 두 가지. 둘 다 실제로 걸렸던 것이다.
     m = re.search(r"^### 1\..*?(?=^### 2\.)", real, re.M | re.S)
