@@ -132,6 +132,13 @@ def check_raw(text=None):
         sec_text = m.group()
         for f in files:
             d = json.loads(f.read_text(encoding="utf-8"))
+            # **잴 수 없었던 회차는 결과가 아니다.** MIN_VALID 게이트에 걸려
+            # INVALID 로 끝난 실행을 결과처럼 대조하면 "0 으로 측정됨"과
+            # "측정 실패" 가 섞인다. 건너뛰되 **건너뛴 사실은 보고한다.**
+            if d.get("verdict") == "INVALID" or not d.get("valid"):
+                skipped.append(f"{f.name} 는 INVALID (유효 {d.get('valid')}"
+                               f"/{d.get('attempts')}) — 결과 아님")
+                continue
             checked += 1
             frac = f"{d['violations']}/{d['valid']}"
             if frac not in sec_text:
