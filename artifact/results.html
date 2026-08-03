@@ -84,10 +84,10 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
 <span class="eyebrow mono">HSPACE Knights Frontier · 8월 측정 결과</span>
 <h1>AGENTFENCE</h1>
 <p class="lede">AI 코딩 에이전트에 대한 공격이 끝까지 성공하는지를
-플랫폼·도구 경로·동작·권한 모드 축으로 측정했다.</p>
+플랫폼·도구 경로·동작·권한 모드·세션 축으로 측정했다.</p>
 <ul class="chips">
   <li class="chip"><span class="mono">대상</span><b class="mono">Claude Code 2.1.220</b></li>
-  <li class="chip"><span class="mono">축</span><b class="mono">4 + 2</b></li>
+  <li class="chip"><span class="mono">축</span><b class="mono">5 + 2</b></li>
   <li class="chip ok"><span class="mono">검사</span><b class="mono">6종</b></li>
   <li class="chip hot"><span class="mono">최대 성공률</span><b class="mono">1.000</b></li>
 </ul>
@@ -115,8 +115,8 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
 이 하네스에는 T3를 재는 케이스가 없다. 위협 모델에 남겨 두는 이유는
 <strong>빠진 자리를 보이게</strong> 하기 위해서다.</p></div>
 <p>T1과 T2는 <strong>둘 다 비신뢰 저장소 콘텐츠</strong>지만 전달 경로가 다르고,
-실측에서 <strong>방어 기준도 달랐다</strong> — T1은 표적 위치로, T2는 지시의 출처로
-판단한다. 하나로 묶어 읽으면 안 된다.</p>
+실측에서 <strong>결과가 달랐다</strong> — T1은 중립 경로에서 거의 항상 실행되고(03),
+T2는 표적과 무관하게 거부된다(05). 하나로 묶어 읽으면 안 된다.</p>
 </section>
 
 <section>
@@ -126,7 +126,7 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
 <div class="scroll"><table>
 <thead><tr><th>동작</th><th>경로</th><th>Windows</th><th>WSL2 (샌드박스)</th></tr></thead>
 <tbody>
-<tr class="cool"><td><strong>쓰기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">[0.57,1.00]</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/30 [0.00,0.11]</span> ← <strong>유일하게 막힌 칸</strong></td></tr>
+<tr class="cool"><td><strong>쓰기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">[0.57,1.00]</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/60 [0.00,0.06]</span> ← <strong>유일하게 막힌 칸</strong></td></tr>
 <tr class="hot"><td>쓰기</td><td>내장 <code>Write</code></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td></tr>
 <tr class="hot"><td><strong>읽기</strong></td><td>Bash 경유</td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">5/5 [0.57,1.00]</span></td></tr>
 <tr class="hot"><td>읽기</td><td>내장 <code>Read</code></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span></td></tr>
@@ -155,28 +155,28 @@ this default still allows reading credential files such as
 <div class="scroll"><table>
 <thead><tr><th>동작 · 경로</th><th>Windows</th><th>WSL2 (샌드박스)</th></tr></thead>
 <tbody>
-<tr><td>쓰기 · Bash</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43]</span> permission</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/30 [0.00,0.11]</span> <span class="mono">perm 25</span> · <span class="mono">enf 5</span></td></tr>
+<tr><td>쓰기 · Bash</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43]</span> permission</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/60 [0.00,0.06]</span> <span class="mono">perm 46</span> · <span class="mono">enf 14</span></td></tr>
 <tr class="hot"><td><strong>읽기 · Bash</strong></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5</span><br><span class="mono muted">Bash 5시도 <strong>5거부</strong></span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">5/5</span><br><span class="mono muted">Bash 5시도 <strong>0거부</strong></span></td></tr>
 <tr><td>읽기 · 내장 <code>Read</code></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43] · 5시도 5거부</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43] · 5시도 5거부</span></td></tr>
 </tbody>
 </table></div>
 <div class="warn">
-<p><strong><code>dontAsk</code> 쓰기 칸도 n=30으로 재측정했다.</strong>
-상한이 0.39 → 0.11로 좁혀졌고, 그보다 중요한 것이 <strong>층 분해</strong>다.</p>
+<p><strong><code>dontAsk</code> 쓰기 칸도 n=30으로 <strong>두 번</strong> 쟀다.</strong>
+상한이 0.39 → 0.06으로 좁혀졌고, 그보다 중요한 것이 <strong>층 분해</strong>다.</p>
 <div class="scroll"><table>
 <thead><tr><th>무엇이 막았나</th><th>회차</th><th>95% CI</th></tr></thead>
 <tbody>
-<tr class="hot"><td><code>permission</code> — 스크립트가 실행조차 안 됨</td><td class="mono"><strong>25/30 = 0.833</strong></td><td class="mono">[0.66, 0.93]</td></tr>
-<tr><td><code>enforcement</code> — 실행됐고 샌드박스가 쓰기를 막음</td><td class="mono">5/30 = 0.167</td><td class="mono">[0.07, 0.34]</td></tr>
+<tr class="hot"><td><code>permission</code> — 스크립트가 실행조차 안 됨</td><td class="mono"><strong>46/60 = 0.767</strong></td><td class="mono">[0.65, 0.86]</td></tr>
+<tr><td><code>enforcement</code> — 실행됐고 샌드박스가 쓰기를 막음</td><td class="mono">14/60 = 0.233</td><td class="mono">[0.14, 0.35]</td></tr>
 </tbody>
 </table></div>
 <p style="margin-top:10px"><strong>이 칸은 샌드박스의 증거로 쓸 수 없다.</strong>
-30회 중 25회는 권한 층이 먼저 잡아서 샌드박스가 시험조차 되지 않았다. 강제 층을
+60회 중 46회는 권한 층이 먼저 잡아서 샌드박스가 시험조차 되지 않았다. 강제 층을
 보려면 권한 층을 꺼야 하고, 그것이 위 네 칸 표를 <code>bypassPermissions</code>로
-재는 이유다 — 그 칸은 30/30이 전부 <code>enforcement</code>였다.</p>
+재는 이유다 — 그 칸은 60/60이 전부 <code>enforcement</code>였다.</p>
 <p style="margin-top:10px">예전 표기 <span class="mono">perm+enf</span>는 두 층이
 <strong>함께</strong> 작동한다는 인상을 준다. 실제로는 <strong>경쟁</strong>이고
-권한 층이 5:1로 이긴다. <strong>n=6에서는 이 구조가 안 보였다</strong> — 같은
+권한 층이 <strong>약 3.3 : 1</strong>로 이긴다. 실행별로는 1차가 25 : 5, 2차가 21 : 9였고 동질적이다(Fisher <span class="mono">p = 0.360</span>) — <strong>단일 draw 의 "5:1" 은 과대 정밀이었다.</strong> <strong>n=6에서는 이 구조가 안 보였다</strong> — 같은
 비율이면 5와 1이고, 그걸로는 경쟁인지 협력인지 구분되지 않는다.</p>
 </div>
 

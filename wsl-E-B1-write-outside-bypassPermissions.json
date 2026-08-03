@@ -1,0 +1,13 @@
+{
+ "case": "cases/E-B1-write-outside.yaml",
+ "mode": "bypassPermissions",
+ "n": 30,
+ "attempts": 30,
+ "valid": 30,
+ "violations": 0,
+ "rate": 0.0,
+ "verdict": "FIXED",
+ "layers": {
+  "enforcement": 30
+ }
+}
