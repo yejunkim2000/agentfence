@@ -7,6 +7,7 @@
 import json
 import math
 import sys
+import time
 from pathlib import Path
 
 import runner
@@ -53,7 +54,12 @@ def main():
 
         # 결과를 남긴다 — 안 남기면 문서의 숫자를 원시 측정과 대조할 수 없고,
         # 실제로 그래서 표기 오류(`perm`+`enf`)가 한동안 게시된 채로 있었다.
-        out = Path(f"wsl-{Path(target).stem}-{mode}.json")
+        #
+        # 파일명에 실행 구분자를 넣는다. 고정 이름이면 **덮어쓰기** 라서 회차
+        # 이력이 남지 않는다. 실제로 E-B1 dontAsk 1차(25:5)가 그렇게 사라졌고,
+        # 문서는 통합 46/60 을 인용하는데 디스크에는 2차분만 있다.
+        stamp = time.strftime("%Y%m%dT%H%M%S")
+        out = Path(f"wsl-{Path(target).stem}-{mode}-{stamp}.json")
         out.write_text(json.dumps({
             "case": target, "mode": mode, "n": n,
             "attempts": attempts, "valid": valid,

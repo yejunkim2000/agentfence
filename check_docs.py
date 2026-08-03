@@ -112,34 +112,38 @@ def check_raw(text=None):
     # **해당 절 안에서만** 찾는다. 문서 전체를 뒤지면 다른 절의 같은 분수가
     # 대신 만족시켜서, 이 절 숫자가 바뀌어도 통과한다 — 이 검사기가 계속
     # 빠지는 "아무것도 안 보고 OK" 함정이다.
+    # (케이스, 모드, 절). 파일명에 실행 구분자가 붙으므로 **glob 으로 전부** 찾고
+    # 회차마다 대조한다. 고정 이름이면 덮어쓰기라 이력이 남지 않는다.
     BINDINGS = [
-        ("wsl-E-B1-write-outside-bypassPermissions.json", 1),
-        ("wsl-E-B1-write-outside-dontAsk.json", 1),
-        ("wsl-T3-route-around-bypassPermissions.json", 6),
+        ("E-B1-write-outside", "bypassPermissions", 1),
+        ("E-B1-write-outside", "dontAsk", 1),
+        ("T3-route-around", "bypassPermissions", 6),
     ]
-    for fname, sec in BINDINGS:
-        p = Path(fname)
-        if not p.exists():
-            skipped.append(f"{fname} 없음 (WSL 에서 wsl_probe.py 재실행 필요)")
+    for case_id, mode, sec in BINDINGS:
+        files = sorted(Path(".").glob(f"wsl-{case_id}-{mode}*.json"))
+        if not files:
+            skipped.append(f"wsl-{case_id}-{mode}*.json 없음 "
+                           f"(WSL 에서 wsl_probe.py 재실행 필요)")
             continue
         m = re.search(rf"^### {sec}\..*?(?=^### {sec + 1}\.|\Z)", text, re.M | re.S)
         if not m:
-            skipped.append(f"README 에서 {sec}절 범위를 못 찾았다 — {fname} 대조 불가")
+            skipped.append(f"README 에서 {sec}절 범위를 못 찾았다 — {case_id} 대조 불가")
             continue
         sec_text = m.group()
-        d = json.loads(p.read_text(encoding="utf-8"))
-        checked += 1
-        frac = f"{d['violations']}/{d['valid']}"
-        if frac not in sec_text:
-            bad.append(f"{sec}절에 {d['mode']} 의 {frac} 이 없다")
-        for layer, cnt in (d.get("layers") or {}).items():
-            if layer == "none":       # 층이 안 잡힌 것은 표기 대상이 아니다
-                continue
+        for f in files:
+            d = json.loads(f.read_text(encoding="utf-8"))
             checked += 1
-            after = rf"{layer}`?\D{{0,4}}\*?\*?{cnt}(?!\d)"
-            before = rf"(?<!\d){cnt}(?:회|/\d+)\D{{0,8}}`?{layer}"
-            if not (re.search(after, sec_text) or re.search(before, sec_text)):
-                bad.append(f"{sec}절에 {d['mode']} 의 {layer} {cnt} 가 없다")
+            frac = f"{d['violations']}/{d['valid']}"
+            if frac not in sec_text:
+                bad.append(f"{sec}절에 {f.name} 의 {frac} 이 없다")
+            for layer, cnt in (d.get("layers") or {}).items():
+                if layer == "none":   # 층이 안 잡힌 것은 표기 대상이 아니다
+                    continue
+                checked += 1
+                after = rf"{layer}`?\D{{0,4}}\*?\*?{cnt}(?!\d)"
+                before = rf"(?<!\d){cnt}(?:회|/\d+)\D{{0,8}}`?{layer}"
+                if not (re.search(after, sec_text) or re.search(before, sec_text)):
+                    bad.append(f"{sec}절에 {f.name} 의 {layer} {cnt} 가 없다")
     return bad, checked, skipped
 
 
@@ -183,6 +187,20 @@ def selfcheck():
         assert hit("permission", 21), "실제 층 수를 못 잡는다"
         assert not hit("permission", 2), "서수 '2차'를 개수 2 로 읽는다"
         assert not hit("enforcement", 90), "없는 값을 잡는다"
+
+    # 실행 구분자가 붙은 뒤로는 회차 파일이 여러 개다. **전부** 도는지 본다.
+    # 하나만 보고 통과하면 이력이 늘어나도 검사는 그대로인 셈이 된다.
+    real_files = sorted(Path(".").glob("wsl-T3-route-around-bypassPermissions*.json"))
+    if real_files:
+        fake = Path("wsl-T3-route-around-bypassPermissions-00000000T000000.json")
+        d = json.loads(real_files[0].read_text(encoding="utf-8"))
+        d["violations"], d["valid"] = 3, 7        # 문서에 없는 숫자
+        fake.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+        try:
+            assert any("3/7" in b for b in check_raw()[0]), \
+                "회차 파일이 여러 개일 때 전부 대조하지 않는다"
+        finally:
+            fake.unlink(missing_ok=True)
 
 
 def main():
