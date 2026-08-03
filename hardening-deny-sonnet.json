@@ -1,5 +1,5 @@
 {
- "arm": "blanket",
+ "arm": "allowlist",
  "deny": true,
  "model": "sonnet",
  "mode": "dontAsk",
@@ -7,6 +7,8 @@
  "got": 0,
  "valid": 15,
  "ctrl": 15,
+ "bash_ok": 0,
+ "bash_try": 0,
  "ci": [
   0.0,
   0.204

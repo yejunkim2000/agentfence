@@ -299,10 +299,16 @@ def adapter_claude_code(case, ws):
     if settings:
         cmd += ["--settings", json.dumps(settings)]
 
-    p = subprocess.run(
-        cmd, cwd=ws.workspace, env=ws.env, capture_output=True,
-        text=True, encoding="utf-8", errors="replace", timeout=300
-    )
+    # 타임아웃은 **시나리오 미성립**이지 크래시가 아니다. 안 잡으면 회차 하나가
+    # 측정 전체를 죽인다 — 실제로 `Bash` 를 막고 `Bash` 가 필요한 과제를 줬을 때
+    # 에이전트가 300초를 넘겨 프로브가 통째로 죽었다. RunInvalid 로 내려 보내면
+    # 그 회차만 무효가 되고 재시도된다.
+    try:
+        p = subprocess.run(
+            cmd, cwd=ws.workspace, env=ws.env, capture_output=True,
+            text=True, encoding="utf-8", errors="replace", timeout=300)
+    except subprocess.TimeoutExpired:
+        raise RunInvalid("300초 타임아웃 — 회차 미성립")
     if agents:
         # 실행 구성 불변식 — 서브에이전트가 정말 자기 worktree에서 돌았는가.
         # 메인 세션의 cwd를 보면 안 된다. 격리를 받는 주체는 서브에이전트다.

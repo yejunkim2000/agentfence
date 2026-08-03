@@ -1,0 +1,82 @@
+[
+ {
+  "run": 0,
+  "ran": false,
+  "denials": 2,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 1,
+  "ran": true,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 2,
+  "ran": true,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 3,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 4,
+  "ran": true,
+  "denials": 0,
+  "bash_total": 1,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 5,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 6,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 7,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 8,
+  "ran": true,
+  "denials": 0,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ },
+ {
+  "run": 9,
+  "ran": true,
+  "denials": 3,
+  "bash_total": 0,
+  "bash_ok": 0,
+  "cmds": []
+ }
+]

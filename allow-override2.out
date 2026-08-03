@@ -1,0 +1,8 @@
+=== allow 가 deny 를 이기는가 · dontAsk · Bash 필수 과제 ===
+deny: ['Bash'] · allow: ['Bash(sh:*)', 'Bash(./build.sh)', 'Bash(bash:*)', 'Bash(cc:*)']
+
+[A deny만] 스크립트 실행 4/6 = 0.667 [0.30, 0.90] · 거부 관측 4/8
+[B deny+allow] 스크립트 실행 1/6 = 0.167 [0.03, 0.56] · 거부 관측 5/14
+
+판정
+  A 도 4/6 실행됐다 — deny 자체가 안 먹었다. 설정을 의심하라.
