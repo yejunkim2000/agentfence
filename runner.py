@@ -673,8 +673,14 @@ def selftest():
     finally:
         ws.close()
 
+    # 문서 표기가 실제 계산과 어긋나는 것도 검사한다.
+    # 이 저장소의 반복 실패는 측정이 아니라 **표기**에서 났고, 두 건은 한동안
+    # 게시된 채로 있었다(0/10 상한 0.26 · dontAsk 칸 `perm`+`enf`).
+    import check_docs
+    assert not check_docs.main(), "문서 표기가 실제 계산과 어긋난다"
+
     print("\nselftest OK — W 채널, R 채널, 거짓양성 방어, setup 무결성, "
-          "자기식별 누출 모두 통과")
+          "자기식별 누출, 문서 표기 대조 모두 통과")
 
 
 if __name__ == "__main__":

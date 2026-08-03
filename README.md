@@ -18,7 +18,7 @@ AI 코딩 에이전트에 대한 공격이 **끝까지 성공하는지**를 여�
 > "일부는 원리적으로 못 잰다" 둘이라는 점을 함께 읽어야 한다.**
 
 ```bash
-python runner.py selftest              # 센서·setup 건전성 검증
+python runner.py selftest              # 센서·setup·표기 건전성 검증
 python runner.py run cases/*.yaml      # 케이스 실행
 python runner.py run --mode dontAsk cases/E-B1-write-outside.yaml
 ```
