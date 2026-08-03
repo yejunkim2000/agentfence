@@ -9,14 +9,18 @@
 둘 다 사람이 눈으로 잡았다. 자기식별 누출을 selftest 어서션으로 막은 것과 같은
 이유로, 이것도 검사로 막는다.
 
-두 가지를 본다.
+세 가지를 본다.
 
-    1. `k/n` 옆에 붙은 95% 구간이 wilson(k, n) 과 맞는가
-    2. 층 분해(`perm A · enf B`)의 합이 그 행의 n 과 맞는가
+    1. `k/n` 옆에 붙은 95% 구간이 wilson(k, n) 과 맞는가   (문서 내부 정합)
+    2. 층 분해(`perm A · enf B`)의 합이 그 행의 n 과 맞는가 (문서 내부 정합)
+    3. 하중을 지는 표의 k/n 이 **원시 측정 파일**과 맞는가  (문서 <-> 데이터)
+
+3 이 없으면 1·2 는 "틀린 숫자가 자기 자신과는 일관된" 경우를 통과시킨다.
 
     python check_docs.py            직접 실행
     python runner.py selftest       selftest 안에서도 돈다
 """
+import json
 import re
 import sys
 from pathlib import Path
@@ -59,6 +63,68 @@ def check(path):
     return bad
 
 
+def check_raw(text=None):
+    """문서의 숫자를 **원시 측정 파일**과 대조한다.
+
+    위의 check() 는 문서 안의 정합만 본다 — 구간이 자기 k/n 과 맞는지. 그것만으로는
+    k/n 자체가 측정과 어긋나는 것을 못 잡는다.
+
+    문서 전체를 데이터에 묶는 일반 엔진은 만들지 않는다. **하중을 지는 표 몇 개만**
+    명시적으로 묶는다. 원시 파일이 없으면 건너뛰되 **건너뛴 것을 보고한다** —
+    조용히 통과하는 검사기가 이 저장소의 실패 방식이다.
+
+    반환: (오류 목록, 대조한 항목 수, 건너뛴 이유 목록)
+    """
+    bad, checked, skipped = [], 0, []
+    # 인자로 받으면 selfcheck 가 일부러 틀린 텍스트를 넣어 볼 수 있다
+    if text is None:
+        text = Path("README.md").read_text(encoding="utf-8")
+
+    # ① 읽기 그리드 3모델 표 (3절) <- read-grid-win{,-haiku,-opus}.json
+    models = [("sonnet", "win"), ("haiku", "win-haiku"), ("opus", "win-opus")]
+    grids = {}
+    for m, tag in models:
+        p = Path(f"read-grid-{tag}.json")
+        if p.exists():
+            grids[m] = json.loads(p.read_text(encoding="utf-8"))["grid"]
+        else:
+            skipped.append(f"read-grid-{tag}.json 없음")
+    if len(grids) == len(models):
+        for mode in ["dontAsk", "acceptEdits", "bypassPermissions"]:
+            row = re.search(rf"^\|\s*`{mode}`\s*\|(.+)$", text, re.M)
+            if not row:
+                skipped.append(f"README 에 `{mode}` 행이 없다")
+                continue
+            doc = re.findall(r"(\d+)\s*/\s*(\d+)", row.group(1))
+            if len(doc) != len(models):
+                skipped.append(f"`{mode}` 행의 분수가 {len(doc)}개 (3개 기대)")
+                continue
+            for (m, _), (k, n) in zip(models, doc):
+                got = sum(r["runs_got"] for r in grids[m] if r["mode"] == mode)
+                ok = sum(r["ok"] for r in grids[m] if r["mode"] == mode)
+                checked += 1
+                if (int(k), int(n)) != (got, ok):
+                    bad.append(f"README `{mode}` × {m}: 문서 {k}/{n} "
+                               f"vs 원시 {got}/{ok}")
+
+    # ② WSL 강제 층 칸 <- wsl-<case>-<mode>.json (wsl_probe.py 가 남긴다)
+    for mode in ["bypassPermissions", "dontAsk"]:
+        p = Path(f"wsl-E-B1-write-outside-{mode}.json")
+        if not p.exists():
+            skipped.append(f"{p.name} 없음 (WSL 에서 wsl_probe.py 재실행 필요)")
+            continue
+        d = json.loads(p.read_text(encoding="utf-8"))
+        checked += 1
+        frac = f"{d['violations']}/{d['valid']}"
+        if frac not in text:
+            bad.append(f"README 에 WSL {mode} 의 {frac} 이 없다")
+        for layer, cnt in (d.get("layers") or {}).items():
+            checked += 1
+            if not re.search(rf"{layer}`?\D{{0,4}}\*?\*?{cnt}\b", text):
+                bad.append(f"README 에 WSL {mode} 의 {layer} {cnt} 가 없다")
+    return bad, checked, skipped
+
+
 def selfcheck():
     """검사기가 고장나면 조용히 OK 를 낸다. 실제로 잡는지 확인한다.
 
@@ -81,12 +147,22 @@ def selfcheck():
 
 def main():
     selfcheck()
-    bad = []
+    bad, pairs = [], 0
     for d in DOCS:
         if Path(d).exists():
-            bad += check(d)
+            found = check(d)
+            bad += found
+            pairs += sum(len(CI.findall(l))
+                         for l in Path(d).read_text(encoding="utf-8").splitlines())
+    raw_bad, checked, skipped = check_raw()
+    bad += raw_bad
     for b in bad:
         print("  " + b)
+    # 무엇을 실제로 봤는지 낸다. 아무것도 안 보고 OK 를 내는 것이 이 검사기의
+    # 실패 방식이고, TOL 을 0.02 로 뒀을 때 실제로 그랬다.
+    print(f"문서 내부 정합: 구간 {pairs}쌍 · 원시 대조: {checked}항목")
+    for s_ in skipped:
+        print(f"  건너뜀: {s_}")
     print(f"문서 표기 대조: {'FAIL ' + str(len(bad)) + '건' if bad else 'OK'}")
     return bad
 

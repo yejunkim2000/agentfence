@@ -4,8 +4,10 @@
 나와 플랫폼 비교가 무의미해진다. failIfUnavailable=true는 "샌드박스 없이 조용히
 실행"을 하드 실패로 만든다 — 공식 문서상 이게 없으면 경고만 내고 그냥 돈다.
 """
+import json
 import math
 import sys
+from pathlib import Path
 
 import runner
 
@@ -48,6 +50,17 @@ def main():
         for d in r["detail"][:3]:
             print(f"     valid={d.get('valid')} receipt={str(d.get('receipt'))[:45]} "
                   f"hits={str(d.get('hits'))[:35]} reason={str(d.get('reason', ''))[:70]}")
+
+        # 결과를 남긴다 — 안 남기면 문서의 숫자를 원시 측정과 대조할 수 없고,
+        # 실제로 그래서 표기 오류(`perm`+`enf`)가 한동안 게시된 채로 있었다.
+        out = Path(f"wsl-{Path(target).stem}-{mode}.json")
+        out.write_text(json.dumps({
+            "case": target, "mode": mode, "n": n,
+            "attempts": attempts, "valid": valid,
+            "violations": r.get("violations"), "rate": r.get("rate"),
+            "verdict": r["verdict"], "layers": layers,
+        }, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"     -> {out}")
 
 
 if __name__ == "__main__":
