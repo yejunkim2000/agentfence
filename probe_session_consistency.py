@@ -143,6 +143,16 @@ def binom_ge(a, n, q):
     return sum(math.comb(n, i) * q**i * (1 - q)**(n - i) for i in range(a, n + 1))
 
 
+def fisher(a, b, c, d):
+    """2x2 양측 정확검정."""
+    n, r1, r2, c1 = a + b + c + d, a + b, c + d, a + c
+    p0 = math.comb(r1, a) * math.comb(r2, c) / math.comb(n, c1)
+    return sum(math.comb(r1, i) * math.comb(r2, c1 - i) / math.comb(n, c1)
+               for i in range(max(0, c1 - r2), min(r1, c1) + 1)
+               if math.comb(r1, i) * math.comb(r2, c1 - i) / math.comb(n, c1)
+               <= p0 * (1 + 1e-9))
+
+
 def main():
     S = int(sys.argv[1]) if len(sys.argv) > 1 else 12
     K = int(sys.argv[2]) if len(sys.argv) > 2 else 4
@@ -196,17 +206,28 @@ def main():
           f" q = {q_pos:.3f} -> 기대 {q_pos * n:.1f}/{n}")
     print(f"이항검정 P(전부같음 >= {same} | H0') = {pv_pos:.4f}")
 
+    # 위치 효과를 **먼저** 본다. 이게 지배적인데 전부-같음 개수만 보면 놓친다.
+    # 실제로 두 번 놓쳤다 — 한 번은 위로 기각해서 "세션당 한 번"이라 읽었고,
+    # 한 번은 기각을 못 해서 "턴마다 독립"이라 읽었다. 둘 다 위치 효과였다.
+    # 전부-같음은 위치 효과가 세면 **줄어든다**. 단측으로 읽으면 안 된다.
+    t1 = sum(s[0] for s in sessions)
+    rest = sum(sum(s[1:]) for s in sessions)
+    fp = fisher(t1, n - t1, rest, n * (K - 1) - rest)
+
     print("\n판정")
-    if pv >= 0.05:
-        print("  턴마다 독립이다. 세션은 판단을 기억하지 않는다.")
-        return
-    if abs(p1 - prest) > 0.2:
-        print(f"  ** 첫 턴이 다르다 — 턴1 {p1:.3f} vs 턴2+ {prest:.3f}.")
-        print("     '세션당 한 번 정해서 재사용'이 아니라 **첫 접촉에서만 따진다**.")
-    if pv_pos < 0.05:
-        print(f"  ** 위치 효과 위에 세션 상관이 더 있다 (P={pv_pos:.4f}).")
+    print(f"  ① 턴 위치: 턴1 {t1}/{n} = {p1:.3f} vs 턴2+ {rest}/{n * (K - 1)}"
+          f" = {prest:.3f} · Fisher p = {fp:.2e}")
+    if fp < 0.05:
+        print("     ** 첫 턴이 다르다. 세션당 한 번 정해서 재사용하는 것이 아니라")
+        print("        **첫 접촉에서만 따지고 그 뒤에는 안 따진다**.")
     else:
-        print(f"  위치 효과를 빼면 세션 상관은 유의하지 않다 (P={pv_pos:.4f}).")
+        print("     턴 위치 효과 없음.")
+    print(f"  ② 위치 효과를 뺀 세션 상관: 관측 {same}/{n},"
+          f" 기대 {q_pos * n:.1f} · P = {pv_pos:.4f}")
+    if pv_pos < 0.05:
+        print("     ** 위치 효과 위에 세션 상관이 더 있다.")
+    else:
+        print("     세션 상관은 유의하지 않다. 위치 효과로 설명된다.")
 
 
 if __name__ == "__main__":
