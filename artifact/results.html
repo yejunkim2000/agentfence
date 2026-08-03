@@ -155,11 +155,31 @@ this default still allows reading credential files such as
 <div class="scroll"><table>
 <thead><tr><th>동작 · 경로</th><th>Windows</th><th>WSL2 (샌드박스)</th></tr></thead>
 <tbody>
-<tr><td>쓰기 · Bash</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43]</span> permission</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/6 [0.00,0.39]</span> perm+enf</td></tr>
+<tr><td>쓰기 · Bash</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43]</span> permission</td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/30 [0.00,0.11]</span> <span class="mono">perm 25</span> · <span class="mono">enf 5</span></td></tr>
 <tr class="hot"><td><strong>읽기 · Bash</strong></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5</span><br><span class="mono muted">Bash 5시도 <strong>5거부</strong></span></td><td><span class="v v-open mono">OPEN</span> <span class="mono">1.000</span> <span class="muted mono">5/5</span><br><span class="mono muted">Bash 5시도 <strong>0거부</strong></span></td></tr>
 <tr><td>읽기 · 내장 <code>Read</code></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43] · 5시도 5거부</span></td><td><span class="v v-fix mono">FIXED</span> <span class="mono">0.000</span> <span class="muted mono">0/5 [0.00,0.43] · 5시도 5거부</span></td></tr>
 </tbody>
 </table></div>
+<div class="warn">
+<p><strong><code>dontAsk</code> 쓰기 칸도 n=30으로 재측정했다.</strong>
+상한이 0.39 → 0.11로 좁혀졌고, 그보다 중요한 것이 <strong>층 분해</strong>다.</p>
+<div class="scroll"><table>
+<thead><tr><th>무엇이 막았나</th><th>회차</th><th>95% CI</th></tr></thead>
+<tbody>
+<tr class="hot"><td><code>permission</code> — 스크립트가 실행조차 안 됨</td><td class="mono"><strong>25/30 = 0.833</strong></td><td class="mono">[0.66, 0.93]</td></tr>
+<tr><td><code>enforcement</code> — 실행됐고 샌드박스가 쓰기를 막음</td><td class="mono">5/30 = 0.167</td><td class="mono">[0.07, 0.34]</td></tr>
+</tbody>
+</table></div>
+<p style="margin-top:10px"><strong>이 칸은 샌드박스의 증거로 쓸 수 없다.</strong>
+30회 중 25회는 권한 층이 먼저 잡아서 샌드박스가 시험조차 되지 않았다. 강제 층을
+보려면 권한 층을 꺼야 하고, 그것이 위 네 칸 표를 <code>bypassPermissions</code>로
+재는 이유다 — 그 칸은 30/30이 전부 <code>enforcement</code>였다.</p>
+<p style="margin-top:10px">예전 표기 <span class="mono">perm+enf</span>는 두 층이
+<strong>함께</strong> 작동한다는 인상을 준다. 실제로는 <strong>경쟁</strong>이고
+권한 층이 5:1로 이긴다. <strong>n=6에서는 이 구조가 안 보였다</strong> — 같은
+비율이면 5와 1이고, 그걸로는 경쟁인지 협력인지 구분되지 않는다.</p>
+</div>
+
 <p><strong>Windows에서 막히던 밖 읽기가 WSL2에서는 통과한다. 방향이 반대다.</strong>
 <code>acceptEdits</code>에서도 같다. 완전 분리가 두 칸이고 양쪽 다 결정적이다 —
 거부 5/5 대 0/5.</p>
