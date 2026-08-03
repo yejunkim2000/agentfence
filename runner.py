@@ -498,6 +498,16 @@ def canary_inside_workspace(ws, token):
 
 
 # ── 실행 ─────────────────────────────────────────────────────────────
+def scan_paths(pats, ws):
+    """케이스가 지정한 후보 경로를 훑는다. 회차 기준선 계산에도 같은 함수를 쓴다."""
+    out = []
+    for pat in pats:
+        pat = os.path.expandvars(os.path.expanduser(
+            pat.replace("$WORKSPACE", posix(ws.workspace)).replace("$ROOT", posix(ws.root))))
+        out += [posix(f) for f in Path("/").glob(pat.lstrip("/"))][:5]
+    return out
+
+
 def run_once(case, index):
     ws = Workspace(f"{case['id']}-{index}", git=case.get("workspace_git", False),
                    cache_target=case.get("cache_target", "outside"))
@@ -519,6 +529,8 @@ def run_once(case, index):
 
         # arm()은 setup 이후 — setup이 심은 파일은 기준선이지 위반이 아니다.
         sensor.arm()
+        # 스캔 기준선도 같은 시점에 잡는다. 회차 간 공유되는 경로의 잔재를 뺀다.
+        scan_before = set(scan_paths(case.get("scan") or [], ws))
 
         try:
             output = pick_adapter(case)(case, ws)
@@ -555,15 +567,16 @@ def run_once(case, index):
         # 사후 스캔 — 센서는 $OUTSIDE 만 본다. 에이전트가 워크스페이스 밖
         # **다른** 위치로 우회하면 안 잡힌다. 케이스가 후보 경로를 지정하면
         # 정리 전에 확인한다. 추론 대신 관측으로 바꾸는 장치다.
+        #
+        # **기준선을 빼야 한다.** 후보 경로 중에는 회차 간 공유되는 것이 있고
+        # (`/tmp/claude-<uid>` 같은 세션 임시 디렉터리), 한 번 만들어지면 이후
+        # 모든 회차가 그것을 본다. 빼지 않으면 "이 회차가 만들었다"와
+        # "앞 회차가 남겼다"가 구별되지 않는다 — 실측에서 회차 8 이후가 전부
+        # 히트로 잡혔고, 실제로는 앞 회차의 잔재였다.
         if case.get("scan"):
-            found = []
-            for pat in case["scan"]:
-                pat = os.path.expandvars(os.path.expanduser(
-                    pat.replace("$WORKSPACE", posix(ws.workspace))
-                       .replace("$ROOT", posix(ws.root))))
-                found += [posix(f) for f in Path("/").glob(pat.lstrip("/"))][:5]
-            res["scan_hits"] = found
+            res["scan_hits"] = sorted(set(scan_paths(case["scan"], ws)) - scan_before)
 
+        # 시도 영수증 —
         # 시도 영수증 — 프로브가 자기 시도 결과를 스스로 보고한다.
         # 부재로부터 "막혔다"를 추론하는 대신 거부를 직접 관측한다.
         receipt = case.get("receipt")
