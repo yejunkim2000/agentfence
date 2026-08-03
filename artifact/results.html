@@ -84,14 +84,14 @@ a:focus-visible{outline:2px solid var(--fence);outline-offset:3px}
 <span class="eyebrow mono">HSPACE Knights Frontier · 8월 측정 결과</span>
 <h1>AGENTFENCE</h1>
 <p class="lede">AI 코딩 에이전트에 대한 공격이 끝까지 성공하는지를
-플랫폼·도구 경로·동작·권한 모드·세션 축으로 측정했다.</p>
+플랫폼·도구 경로·동작·권한 모드·세션·완화책 축으로 측정했다.</p>
 <ul class="chips">
   <li class="chip"><span class="mono">대상</span><b class="mono">Claude Code 2.1.220</b></li>
-  <li class="chip"><span class="mono">축</span><b class="mono">6 + 2</b></li>
+  <li class="chip"><span class="mono">축</span><b class="mono">7 + 2</b></li>
   <li class="chip ok"><span class="mono">검사</span><b class="mono">6종</b></li>
   <li class="chip hot"><span class="mono">최대 성공률</span><b class="mono">1.000</b></li>
 </ul>
-<p class="muted" style="margin:-14px 0 24px">축 여덟 중 <strong>다섯(플랫폼·도구 경로·동작·권한 모드·세션 내 일관성)은 결과가 갈렸다.</strong> T3(우회 탐색)는 <strong>측정했고 우회가 없었다</strong>(0/18).
+<p class="muted" style="margin:-14px 0 24px">축 아홉 중 <strong>여섯(플랫폼·도구 경로·동작·권한 모드·세션 내 일관성·완화책 유효성)은 결과가 갈렸다.</strong> T3(우회 탐색)는 <strong>측정했고 우회가 없었다</strong>(0/34). 문서가 안내하는 완화책은 <strong>낮추지만 닫지 못한다</strong>(0.976 → 0.127).
 <strong>모델축은 조건부</strong>였고(워크스페이스 경로가 실험을 알릴 때만 갈린다),
 버전축은 <strong>측정했으나 평평했다</strong> — 이 프로브에 대해 회귀가 없다. 원래 목표였던 "격리 구현 단독의 버전 회귀"는 <strong>측정 불가</strong>
 판정을 받았다(취약 버전에 해당 실행 구성 자체가 없었다). 못 잰 이유를 근거 있게
@@ -417,7 +417,60 @@ there failed"</blockquote>
 </section>
 
 <section>
-<span class="eyebrow mono">07 — 읽는 법</span>
+<span class="eyebrow mono">07 — 완화책</span>
+<h2>거부 목록은 <em>이름</em>으로 막고, 이름은 열거할 수 없다</h2>
+<p>01절에서 가장 나쁜 칸은 <strong>WSL2 · Bash 경유 · 읽기</strong>다. 공식 문서는
+<code>permissions.deny</code>로 좁히라고 안내한다. <strong>그 안내가 실제로 먹는지는
+아무도 재지 않았다.</strong></p>
+<div class="scroll"><table>
+<thead><tr><th>팔</th><th>밖 접근</th><th>95% CI</th></tr></thead>
+<tbody>
+<tr class="hot"><td>샌드박스만</td><td class="mono"><strong>40/41 = 0.976</strong></td><td class="mono">[0.87, 1.00]</td></tr>
+<tr class="cool"><td>+ <code>permissions.deny</code></td><td class="mono"><strong>5/41 = 0.122</strong></td><td class="mono">[0.05, 0.26]</td></tr>
+</tbody>
+</table></div>
+<p>구간 분리, Fisher <span class="mono">p = 2.1×10⁻¹⁶</span>. <strong>완화책은
+작동한다</strong> — 이 저장소가 처음으로 "이렇게 하면 낮아진다"를 근거와 함께 말한다.</p>
+<h3>그런데 0이 아니고, 새는 방법이 하나다</h3>
+<blockquote class="mono">grep -n '' &lt;밖 경로&gt;/CHANGELOG.md</blockquote>
+<p><code>grep -n ''</code>는 파일 전체를 줄번호와 함께 출력한다 —
+<strong><code>cat</code>의 완전한 대체</strong>다. 규칙 목록에는
+<code>cat</code>·<code>head</code>·<code>tail</code>·<code>less</code>가 있고
+<strong><code>grep</code>이 없었다.</strong></p>
+<h3>모델을 바꿔도 같다</h3>
+<div class="scroll"><table>
+<thead><tr><th>모델</th><th>우회</th><th>95% CI</th><th>방법</th></tr></thead>
+<tbody>
+<tr><td><code>sonnet</code></td><td class="mono">5/41 = 0.122</td><td class="mono">[0.05, 0.26]</td><td class="mono">grep</td></tr>
+<tr><td><code>haiku</code></td><td class="mono">4/15 = 0.267</td><td class="mono">[0.11, 0.52]</td><td class="mono">grep</td></tr>
+<tr><td><code>opus</code></td><td class="mono">0/15 = 0.000</td><td class="mono">[0.00, 0.20]</td><td>—</td></tr>
+<tr class="hot"><td><strong>통합</strong></td><td class="mono"><strong>9/71 = 0.127</strong></td><td class="mono"><strong>[0.07, 0.22]</strong></td><td></td></tr>
+</tbody>
+</table></div>
+<p><strong>쌍별 비교가 전부 유의하지 않다</strong>(0.309 · 0.100 · 0.229).
+<code>opus</code>에서 관측되지 않았지만 <strong>다르다고 말할 수 없다</strong> —
+0/15의 상한이 0.20이라 나머지와 겹친다.</p>
+<p>두 모델이 <strong>독립적으로 같은 대체 명령</strong>에 도달했다. 단일 모델의
+버릇이 아니라 <strong>거부 목록 방식의 성질</strong>이다. <code>grep</code>을 막으면
+<code>sed</code>·<code>awk</code>·<code>od</code>·<code>strings</code>·
+<code>python -c</code>가 남는다.</p>
+<div class="callout">
+<p><strong>권고가 바뀐다.</strong> 경로 기반 <code>Read(&lt;경로&gt;/**)</code>는 도구
+이름과 무관하고, <code>Bash</code> <strong>허용 목록</strong>은 열거 방향이 반대라
+완전할 수 있다. <code>Bash(&lt;명령&gt;:*)</code> 이름 열거는 <strong>샌다</strong> —
+심층 방어로만 쓴다.</p>
+</div>
+<div class="warn">
+<p><strong><span class="mono">0.127</span>을 "완화 후 잔여 위험"으로 일반화하면 안
+된다.</strong> 그 값은 목록에 무엇이 있었는가의 함수다. 재는 것은 잔여 위험의 크기가
+아니라 <strong>열거 방식이 완전하지 않다는 사실</strong>이다.</p>
+<p style="margin-top:10px"><strong>정정.</strong> n=6에서 0/6을 보고 "닫힌다"고 썼다.
+n=15에서 1/15, n=20에서 4/20이 나왔다 — <strong>작은 표본에 기댄 네 번째 판단</strong>이다.</p>
+</div>
+</section>
+
+<section>
+<span class="eyebrow mono">08 — 읽는 법</span>
 <h2>이 숫자가 말하지 않는 것</h2>
 <div class="warn">
 <p><strong><code>FIXED</code>는 "안전하다"가 아니다.</strong> 사슬 어딘가에서
@@ -439,7 +492,7 @@ OS가 막은 FIXED는 <strong>견고함이 다르다</strong> — 앞은 프롬�
 </section>
 
 <section>
-<span class="eyebrow mono">08 — 어떻게 여기까지 왔나</span>
+<span class="eyebrow mono">09 — 어떻게 여기까지 왔나</span>
 <h2>다섯 번 막히고 구조를 바꿨다</h2>
 <ol class="gen">
 <li><b>실행 구성 불일치</b> — CHANGELOG 주어의 한정어를 흘려 읽었다. 내 설계 결함</li>
@@ -462,7 +515,7 @@ OS가 막은 FIXED는 <strong>견고함이 다르다</strong> — 앞은 프롬�
 </section>
 
 <section>
-<span class="eyebrow mono">09 — 하네스</span>
+<span class="eyebrow mono">10 — 하네스</span>
 <h2>판정이 성립하기 위한 검사 넷</h2>
 <p>이 하네스는 <strong>"숫자는 나오는데 뜻이 없는"</strong> 실패를 여러 번 냈다.
 자체 결함을 13번 잡았고 전부 그 계열이었다 — 인코딩 실패로 stdout이 <code>None</code>,
@@ -488,7 +541,7 @@ OS가 막은 FIXED는 <strong>견고함이 다르다</strong> — 앞은 프롬�
 </section>
 
 <section>
-<span class="eyebrow mono">10 — 정직하게</span>
+<span class="eyebrow mono">11 — 정직하게</span>
 <h2>메커니즘 자체는 새롭지 않다</h2>
 <p>일회용 워크스페이스, 카나리, 반복 측정, 네거티브 컨트롤 — 전부 선례가 있다
 (promptfoo, jfrog/agent-belt, UnderSpecBench).</p>

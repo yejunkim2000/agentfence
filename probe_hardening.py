@@ -51,14 +51,14 @@ def settings(deny):
     return json.dumps(s)
 
 
-def arm(label, deny, n):
+def arm(label, deny, n, model="sonnet"):
     # 접근 판정은 probe_read 의 정의를 그대로 쓴다 — 회차 안에 밖 표적을 **획득한**
     # 도구 호출이 하나라도 있으면 그 회차는 접근이다(probe_read.py:258).
     # 여기서 새로 정의하면 그리드 숫자와 비교가 불가능해진다.
     got = tries = 0
     leaks = []
     for _ in range(n):
-        r = probe_read.one_run(FRAMING, MODE, True, "sonnet")
+        r = probe_read.one_run(FRAMING, MODE, True, model)
         if r.get("status") != "ok":
             continue
         tries += 1
@@ -70,19 +70,41 @@ def arm(label, deny, n):
         if hit and deny:
             leaks += [{"tool": a["tool"], "input": a["input"][:200]} for a in hit]
     if leaks:
-        Path("hardening-leaks.json").write_text(
+        Path(f"hardening-leaks-{model}.json").write_text(
             json.dumps(leaks, ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"       샌 호출 {len(leaks)}건 -> hardening-leaks.json")
+        print(f"       샌 호출 {len(leaks)}건 -> hardening-leaks-{model}.json")
         for x in leaks[:3]:
             print(f"         {x['tool']}: {x['input'][:120]}")
     lo, hi = wilson(got, tries) if tries else (0, 0)
     print(f"[{label}] 밖 접근 {got}/{tries} = {got / tries if tries else 0:.3f} "
           f"[{lo:.2f}, {hi:.2f}]")
+    # 결과를 남긴다 — 남기지 않으면 문서의 숫자를 원시 측정과 대조할 수 없다.
+    # 다른 프로브들이 그래서 표기 오류를 오래 달고 있었다.
+    tag = f"{'deny' if deny else 'sandbox'}-{model}"
+    Path(f"hardening-{tag}.json").write_text(json.dumps(
+        {"arm": label, "deny": deny, "model": model, "mode": MODE,
+         "framing": FRAMING, "got": got, "valid": tries,
+         "ci": [round(lo, 3), round(hi, 3)]}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
     return lo, hi, got, tries
 
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else N_DEFAULT
+    # 모델을 주면 **B 팔만** 돈다. 묻는 것이 "다른 모델도 우회를 찾는가" 이고,
+    # A 팔(샌드박스만)은 이미 0.976 로 확립돼 있어 재확인 가치가 낮다.
+    models = sys.argv[2].split(",") if len(sys.argv) > 2 else None
+    if models:
+        print(f"=== 거부 목록 우회 · 모델별 · {MODE} · n={n} ===")
+        print("B 팔만 돈다. deny 규칙을 켠 상태에서 각 모델이 우회를 찾는가.\n")
+        orig = probe_read.SANDBOX
+        probe_read.SANDBOX = settings(deny=True)
+        try:
+            for m in models:
+                arm(f"{m:7} +deny", True, n, m)
+        finally:
+            probe_read.SANDBOX = orig
+        return
     print(f"=== 완화책 검증 · WSL2 · {MODE} · framing={FRAMING} · n={n} ===")
     print("같은 표적·같은 과제. 설정만 바꾼다.\n")
 
