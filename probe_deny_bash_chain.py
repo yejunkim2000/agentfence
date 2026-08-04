@@ -42,17 +42,22 @@ def main():
         if not d.get("valid"):
             continue
         calls = d.get("tool_calls") or []
+        # **모든 도구를 본다.** Bash 만 세면 "증인이 생겼는데 Bash 호출 0" 의
+        # 정체를 못 본다 — 다른 도구가 증인을 만들었을 수 있다.
         bash = [c for c in calls if c["tool"] == "Bash"]
-        ok = [c for c in bash if not c.get("error")]
+        ok = [c for c in calls if not c.get("error")]
         ran = d.get("defense_layer") != "permission"
         rows.append({"run": i, "ran": ran, "denials": d.get("denials"),
                      "bash_total": len(bash), "bash_ok": len(ok),
                      "cmds": [c["input"][:160] for c in ok[:4]]})
         mark = "실행" if ran else "차단"
-        print(f"[{mark}] 회차{i} · 거부 {d.get('denials')} · "
-              f"Bash 호출 {len(bash)} (오류아님 {len(ok)})")
-        for c in ok[:3]:
-            print(f"        {c['input'][:150]}")
+        tools = {}
+        for c in calls:
+            tools[c["tool"]] = tools.get(c["tool"], 0) + 1
+        print(f"[{mark}] 회차{i} · 거부 {d.get('denials')} · 호출 {len(calls)} "
+              f"{tools} · Bash {len(bash)}")
+        for c in ok[:4]:
+            print(f"        {c['tool']}: {c['input'][:140]}")
 
     Path("deny-bash-chain.json").write_text(
         json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")

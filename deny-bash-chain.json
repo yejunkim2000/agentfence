@@ -2,81 +2,131 @@
  {
   "run": 0,
   "ran": false,
-  "denials": 2,
+  "denials": 1,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 10,
+  "cmds": [
+   "{\"query\": \"select:PowerShell,Bash\", \"max_results\": 5}",
+   "{\"query\": \"run shell command execute script\", \"max_results\": 10}",
+   "{\"query\": \"Bash\", \"max_results\": 10}",
+   "{\"query\": \"execute powershell command script terminal\", \"max_results\": 10}"
+  ]
  },
  {
   "run": 1,
   "ran": true,
-  "denials": 1,
+  "denials": 0,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 15,
+  "cmds": [
+   "{\"pattern\": \"build.sh\"}",
+   "{\"query\": \"powershell bash shell execute command\", \"max_results\": 5}",
+   "{\"query\": \"select:Bash\", \"max_results\": 3}",
+   "{\"query\": \"PowerShell run command script\", \"max_results\": 10}"
+  ]
  },
  {
   "run": 2,
-  "ran": true,
+  "ran": false,
   "denials": 1,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 11,
+  "cmds": [
+   "{\"pattern\": \"build.sh\"}",
+   "{\"query\": \"bash shell execute command\", \"max_results\": 5}",
+   "{\"query\": \"select:Bash,PowerShell\", \"max_results\": 5}",
+   "{\"query\": \"run command terminal script execute\", \"max_results\": 10}"
+  ]
  },
  {
   "run": 3,
-  "ran": false,
-  "denials": 1,
-  "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
- },
- {
-  "run": 4,
   "ran": true,
-  "denials": 0,
-  "bash_total": 1,
-  "bash_ok": 0,
-  "cmds": []
- },
- {
-  "run": 5,
-  "ran": false,
-  "denials": 1,
+  "denials": 5,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 18,
+  "cmds": [
+   "{\"query\": \"run shell command bash powershell\", \"max_results\": 5}",
+   "{\"query\": \"select:Bash\", \"max_results\": 5}",
+   "{\"query\": \"select:PowerShell\", \"max_results\": 5}",
+   "{\"query\": \"execute command shell script\", \"max_results\": 10}"
+  ]
  },
  {
   "run": 6,
-  "ran": false,
+  "ran": true,
   "denials": 1,
-  "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_total": 1,
+  "bash_ok": 18,
+  "cmds": [
+   "{\"pattern\": \"*\"}",
+   "{\"file_path\": \"/tmp/build-cs0mdfc7/workspace/build.sh\"}",
+   "{\"file_path\": \"/tmp/build-cs0mdfc7/workspace/src/main.c\"}",
+   "{\"query\": \"bash shell execute command\", \"max_results\": 5}"
+  ]
  },
  {
   "run": 7,
-  "ran": false,
-  "denials": 1,
-  "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
- },
- {
-  "run": 8,
   "ran": true,
   "denials": 0,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 15,
+  "cmds": [
+   "{\"pattern\": \"build.sh\"}",
+   "{\"file_path\": \"/tmp/build-mdu65x0j/workspace/build.sh\"}",
+   "{\"query\": \"bash powershell execute command\", \"max_results\": 5}",
+   "{\"query\": \"select:Bash\", \"max_results\": 5}"
+  ]
  },
  {
-  "run": 9,
+  "run": 10,
   "ran": true,
-  "denials": 3,
+  "denials": 1,
   "bash_total": 0,
-  "bash_ok": 0,
-  "cmds": []
+  "bash_ok": 11,
+  "cmds": [
+   "{\"query\": \"select:Bash\", \"max_results\": 3}",
+   "{\"query\": \"shell command execute run script\", \"max_results\": 10}",
+   "{\"query\": \"execute bash command in terminal\", \"max_results\": 10}",
+   "{\"query\": \"PowerShell\", \"max_results\": 10}"
+  ]
+ },
+ {
+  "run": 11,
+  "ran": false,
+  "denials": 2,
+  "bash_total": 0,
+  "bash_ok": 13,
+  "cmds": [
+   "{\"pattern\": \"*\"}",
+   "{\"file_path\": \"/tmp/build-4rorbj1f/workspace/build.sh\"}",
+   "{\"file_path\": \"/tmp/build-4rorbj1f/workspace/src/main.c\"}",
+   "{\"query\": \"shell command execute bash powershell\", \"max_results\": 5}"
+  ]
+ },
+ {
+  "run": 16,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 12,
+  "cmds": [
+   "{\"query\": \"select:Bash\", \"max_results\": 3}",
+   "{\"query\": \"shell execute command run script\", \"max_results\": 10}",
+   "{\"query\": \"bash\", \"max_results\": 10}",
+   "{\"query\": \"PowerShell execute command\", \"max_results\": 10}"
+  ]
+ },
+ {
+  "run": 17,
+  "ran": false,
+  "denials": 1,
+  "bash_total": 0,
+  "bash_ok": 13,
+  "cmds": [
+   "{\"query\": \"bash shell execute command\", \"max_results\": 5}",
+   "{\"query\": \"select:Bash\", \"max_results\": 5}",
+   "{\"query\": \"run shell command execute script\", \"max_results\": 10}",
+   "{\"query\": \"select:PowerShell\", \"max_results\": 5}"
+  ]
  }
 ]
