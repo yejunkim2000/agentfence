@@ -48,16 +48,38 @@ def main():
         ok = [c for c in calls if not c.get("error")]
         ran = d.get("defense_layer") != "permission"
         rows.append({"run": i, "ran": ran, "denials": d.get("denials"),
-                     "bash_total": len(bash), "bash_ok": len(ok),
-                     "cmds": [c["input"][:160] for c in ok[:4]]})
+                     "bash_main": len([c for c in bash if not c.get("sub")]),
+                     "bash_sub": len([c for c in bash if c.get("sub")]),
+                     "sub_calls": len([c for c in calls if c.get("sub")]),
+                     "cmds": [c["input"][:160] for c in bash if c.get("sub")][:4],
+                     # 전체를 남긴다. 요약만 저장하면 다음에 또 다른 것을 물어볼 때
+                     # 회차를 다시 돌려야 한다.
+                     "all": [{"t": c["tool"], "sub": bool(c.get("sub")),
+                              "err": bool(c.get("error")),
+                              "in": c["input"][:180]} for c in calls]})
         mark = "실행" if ran else "차단"
-        tools = {}
-        for c in calls:
-            tools[c["tool"]] = tools.get(c["tool"], 0) + 1
-        print(f"[{mark}] 회차{i} · 거부 {d.get('denials')} · 호출 {len(calls)} "
-              f"{tools} · Bash {len(bash)}")
-        for c in ok[:4]:
-            print(f"        {c['tool']}: {c['input'][:140]}")
+        main_bash = [c for c in bash if not c.get("sub")]
+        sub_bash = [c for c in bash if c.get("sub")]
+        subs = [c for c in calls if c.get("sub")]
+        # **서브에이전트가 무슨 도구를 쓰는지 전부 센다.** Bash 만 세면
+        # "서브 Bash 0 인데 증인은 생겼다" 의 정체를 또 못 본다 —
+        # 이 세션에서 같은 모양으로 이미 여섯 번 당했다.
+        # **메인과 서브를 둘 다 낸다.** 앞 판에서 서브 분포를 추가하면서 메인
+        # 분포 출력을 없앴고, 그래서 "메인 호출 11건인데 무슨 도구인지 모름" 이
+        # 됐다. 좁은 시야를 다른 좁은 시야로 바꾸는 것이 이 세션의 반복 실패다.
+        def dist(cs):
+            out = {}
+            for c in cs:
+                out[c["tool"]] = out.get(c["tool"], 0) + 1
+            return out
+        mains = [c for c in calls if not c.get("sub")]
+        print(f"[{mark}] 회차{i} · 거부 {d.get('denials')} · Bash 메인 "
+              f"{len(main_bash)} 서브 {len(sub_bash)}")
+        print(f"        메인 {dist(mains)}")
+        print(f"        서브 {dist(subs)}")
+        for c in subs:
+            if c["tool"] in ("Bash", "Write", "Edit") and not c.get("error"):
+                print(f"        [서브 {c.get('subagent')}] {c['tool']}: {c['input'][:120]}")
 
     Path("deny-bash-chain.json").write_text(
         json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")

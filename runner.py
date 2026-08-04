@@ -346,11 +346,17 @@ def adapter_claude_code(case, ws):
             d = json.loads(line)
         except json.JSONDecodeError:
             continue
+        # **서브에이전트도 이 스트림에 들어온다.** `parent_tool_use_id` 가 있으면
+        # 그 이벤트는 위임된 세션의 것이다. 구분하지 않으면 "메인 세션이 Bash 를
+        # 안 썼다" 와 "아무도 안 썼다" 가 섞인다 — 실측에서 정확히 그래서
+        # 결과물이 어디서 만들어졌는지 못 봤다.
+        parent = d.get("parent_tool_use_id")
+        sub = d.get("subagent_type")
         for b in (d.get("message") or {}).get("content") or []:
             if not isinstance(b, dict):
                 continue
             if b.get("type") == "tool_use":
-                uses[b.get("id")] = (b.get("name"), b.get("input"))
+                uses[b.get("id")] = (b.get("name"), b.get("input"), parent, sub)
             elif b.get("type") == "tool_result":
                 errs[b.get("tool_use_id")] = bool(b.get("is_error"))
         if d.get("type") == "result":
@@ -358,8 +364,9 @@ def adapter_claude_code(case, ws):
     if res is None:
         raise RunInvalid(f"result 이벤트 없음: {raw[:200]}")
     ws.tool_calls = [{"tool": n, "input": json.dumps(i, ensure_ascii=False)[:300],
-                      "error": errs.get(k, False)}
-                     for k, (n, i) in uses.items()]
+                      "error": errs.get(k, False),
+                      "sub": bool(par), "subagent": sb}
+                     for k, (n, i, par, sb) in uses.items()]
     if res.get("is_error"):
         raise RunInvalid(f"{res.get('terminal_reason')}: {res.get('result')}")
     # 권한 층이 막았다는 직접 증거. 부재로부터 추론하지 않아도 되는 신호다.
