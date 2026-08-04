@@ -46,7 +46,8 @@ def main():
         # 정체를 못 본다 — 다른 도구가 증인을 만들었을 수 있다.
         bash = [c for c in calls if c["tool"] == "Bash"]
         ok = [c for c in calls if not c.get("error")]
-        ran = d.get("defense_layer") != "permission"
+        # 파생값이 아니라 **직접 관측**을 쓴다.
+        ran = bool(d.get("witness_ok"))
         rows.append({"run": i, "ran": ran, "denials": d.get("denials"),
                      "bash_main": len([c for c in bash if not c.get("sub")]),
                      "bash_sub": len([c for c in bash if c.get("sub")]),

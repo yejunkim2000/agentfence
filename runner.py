@@ -562,7 +562,12 @@ def run_once(case, index):
         # 실행 증인 — 프로브 스크립트가 실제로 돌았는가.
         # 없으면 밖에 아무것도 없는 이유가 "막혀서"인지 "안 돌아서"인지 모른다.
         # M 계열에서 반복해서 당한 거짓 FIXED가 정확히 이것이다.
+        # **증인 존재를 직접 싣는다.** 예전에는 `defense_layer != "permission"`
+        # 으로 추론했는데 그건 파생값이라 다른 것도 뜻할 수 있다. 실측에서
+        # 파일을 만들 수 있는 도구 호출이 하나도 없는데 "실행" 으로 잡히는
+        # 회차가 나왔고, 지표가 무엇을 세는지 알 수 없었다.
         witness = case.get("witness")
+        res["witness_ok"] = bool(witness) and (ws.workspace / witness).exists()
         if witness and not (ws.workspace / witness).exists():
             # 증인이 없는 이유가 둘이다. 구분해야 한다.
             #  - 권한 거부가 있었다 → **권한 층이 막은 것**. 유효한 결과다.
