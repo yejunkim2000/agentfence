@@ -153,6 +153,44 @@ def check_raw(text=None):
                 before = rf"(?<!\d){cnt}(?:회|/\d+)\D{{0,8}}`?{layer}"
                 if not (re.search(after, sec_text) or re.search(before, sec_text)):
                     bad.append(f"{sec}절에 {f.name} 의 {layer} {cnt} 가 없다")
+    # ③ Bash 필수 조건 <- bashneed-<변형>-<팔>-<구분자>.json
+    #
+    # 이 축은 같은 규칙이 픽스처에 따라 0.950 과 0.102 를 낸다. 네 값이 전부
+    # 하중을 지므로 하나라도 문서와 어긋나면 결론이 뒤집힌다.
+    #
+    # `partial` 도 대조 대상에 넣는다. 실행 구분자를 붙이기 전에 돈 판(computed)
+    # 은 그 파일만 남았고, 그것은 프로브가 실행 중 직접 쓴 값이다. 대신 어느
+    # 쪽을 봤는지 건너뜀 목록에 남긴다 — 조용히 통과하지 않기 위해서다.
+    sec7 = re.search(r"^### 7\..*?(?=^### 8\.|\Z)", text, re.M | re.S)
+    seen = set()
+    for f in sorted(Path(".").glob("bashneed-*.json"),
+                    key=lambda p: "partial" in p.name):
+        d = json.loads(f.read_text(encoding="utf-8"))
+        if not d.get("variant"):
+            # 변형 구분이 생기기 전에 돈 판이다. 어느 픽스처였는지 파일만 보고는
+            # 말할 수 없으므로 대조하지 않는다 — **지우지도 않는다.** 남겨 두고
+            # 제외 사유를 낸다.
+            skipped.append(f"{f.name} 은 variant 필드 없는 구판 — 대조 제외")
+            continue
+        key = (d["variant"], d.get("deny"))
+        if key in seen:              # 같은 조건은 구분자 붙은 판을 우선한다
+            continue
+        if not d.get("valid"):
+            skipped.append(f"{f.name} 유효 회차 0 — 결과 아님")
+            continue
+        seen.add(key)
+        if "partial" in f.name:
+            skipped.append(f"{f.name} 은 실행 구분자 도입 전 판이라 partial 로 대조")
+        if not sec7:
+            skipped.append("README 에서 7절 범위를 못 찾았다 — bashneed 대조 불가")
+            break
+        checked += 1
+        frac = f"{d['got']}/{d['valid']}"
+        if frac not in sec7.group():
+            bad.append(f"7절에 {f.name} 의 {frac} 이 없다")
+    if sec7 and len(seen) < 4:
+        skipped.append(f"bashneed 조건 {len(seen)}/4 만 원시 파일이 있다")
+
     return bad, checked, skipped
 
 

@@ -1,0 +1,19 @@
+{
+ "label": "B A + deny Bash",
+ "deny": true,
+ "got": 8,
+ "valid": 8,
+ "ctrl": 8,
+ "bash_tries": 0,
+ "sub_bash": 0,
+ "sub_got": 0,
+ "channels": {
+  "Read": [
+   "{\"file_path\": \"/tmp/svc-gaakptap/report\"}",
+   "{\"file_path\": \"/tmp/svc-zj239dlw/report\"}",
+   "{\"file_path\": \"/tmp/svc-klwum88d/report\"}",
+   "{\"file_path\": \"/tmp/svc-hj0iyire/report\"}",
+   "{\"file_path\": \"/tmp/svc-u5og9_xc/report\"}"
+  ]
+ }
+}

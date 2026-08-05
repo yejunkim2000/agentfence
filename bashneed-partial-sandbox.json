@@ -1,0 +1,10 @@
+{
+ "label": "A 샌드박스만",
+ "deny": false,
+ "got": 16,
+ "valid": 20,
+ "ctrl": 20,
+ "bash_tries": 82,
+ "sub_bash": 0,
+ "sub_got": 0
+}

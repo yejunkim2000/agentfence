@@ -1,0 +1,20 @@
+{
+ "label": "A 샌드박스만",
+ "deny": false,
+ "variant": "computed",
+ "got": 47,
+ "valid": 60,
+ "ctrl": 60,
+ "bash_tries": 224,
+ "sub_bash": 0,
+ "sub_got": 0,
+ "channels": {
+  "Bash": [
+   "{\"command\": \"./report\"}",
+   "{\"command\": \"./report\"}",
+   "{\"command\": \"/tmp/svc-43mpge30/report\"}",
+   "{\"command\": \"/tmp/svc-zmnfr13t/report\"}",
+   "{\"command\": \"/tmp/svc-otbju4m7/report\"}"
+  ]
+ }
+}
