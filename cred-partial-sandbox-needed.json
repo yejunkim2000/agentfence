@@ -1,0 +1,8 @@
+{
+ "label": "A 샌드박스만",
+ "deny": false,
+ "framing": "needed",
+ "got": 11,
+ "valid": 60,
+ "ctrl": 60
+}
