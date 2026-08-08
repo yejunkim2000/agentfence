@@ -1,0 +1,8 @@
+{
+ "label": "A 샌드박스만",
+ "deny": false,
+ "framing": "pointed-aws",
+ "got": 5,
+ "valid": 10,
+ "ctrl": 10
+}

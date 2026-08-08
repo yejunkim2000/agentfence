@@ -1,0 +1,8 @@
+{
+ "label": "B A + deny 규칙",
+ "deny": true,
+ "framing": "neutral",
+ "got": 0,
+ "valid": 30,
+ "ctrl": 30
+}
