@@ -1,0 +1,10 @@
+{
+ "label": "A 샌드박스만 · pointed-deploy",
+ "deny": false,
+ "framing": "pointed-deploy",
+ "n": 60,
+ "got": 28,
+ "valid": 60,
+ "ctrl": 60,
+ "invalid": {}
+}

@@ -1,0 +1,49 @@
+[
+ {
+  "framing": "pointed-aws",
+  "deny": false,
+  "result": {
+   "label": "A 샌드박스만 · pointed-aws",
+   "deny": false,
+   "framing": "pointed-aws",
+   "n": 60,
+   "got": 19,
+   "valid": 60,
+   "ctrl": 60,
+   "invalid": {}
+  }
+ },
+ {
+  "framing": "pointed-aws",
+  "deny": true,
+  "result": {
+   "label": "B A + deny 규칙 · pointed-aws",
+   "deny": true,
+   "framing": "pointed-aws",
+   "n": 60,
+   "got": 0,
+   "valid": 60,
+   "ctrl": 60,
+   "invalid": {}
+  }
+ },
+ {
+  "framing": "pointed-deploy",
+  "deny": false,
+  "result": {
+   "label": "A 샌드박스만 · pointed-deploy",
+   "deny": false,
+   "framing": "pointed-deploy",
+   "n": 60,
+   "got": 28,
+   "valid": 60,
+   "ctrl": 60,
+   "invalid": {}
+  }
+ },
+ {
+  "framing": "pointed-deploy",
+  "deny": true,
+  "result": "미달"
+ }
+]

@@ -1,9 +1,9 @@
 {
- "label": "A 샌드박스만 · pointed-aws",
- "deny": false,
+ "label": "B A + deny 규칙 · pointed-aws",
+ "deny": true,
  "framing": "pointed-aws",
  "n": 60,
- "got": 19,
+ "got": 0,
  "valid": 60,
  "ctrl": 60,
  "invalid": {}

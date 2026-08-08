@@ -1,0 +1,12 @@
+{
+ "label": "B A + deny 규칙 · pointed-deploy",
+ "deny": true,
+ "framing": "pointed-deploy",
+ "n": 60,
+ "got": 0,
+ "valid": 16,
+ "ctrl": 16,
+ "invalid": {
+  "success": 44
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "label": "B A + deny 규칙",
+ "deny": true,
+ "framing": "pointed-deploy",
+ "n": 6,
+ "got": 0,
+ "valid": 6,
+ "ctrl": 6,
+ "invalid": {}
+}
