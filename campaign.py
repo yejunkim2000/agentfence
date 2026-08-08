@@ -159,6 +159,18 @@ def run():
             _, d2 = finished(probe, framing, deny, n)
             log.append({"framing": framing, "deny": deny,
                         "result": d2 or "미달"})
+        except CRED.Fatal as e:
+            # 계정 한도 같은 조건은 다음 팔에서도 그대로다. **계획을 멈춘다.**
+            # 안 멈추면 남은 팔이 전부 "유효 0회" 로 기록되고, 그것은 결과처럼
+            # 생겼지만 아무것도 재지 않은 것이다.
+            print(f"\n!! 실행 중단 — {e}", flush=True)
+            print("   재시도로 풀리지 않는다. 조건이 해소되면 `campaign.py run` 을")
+            print("   다시 부르면 끝난 팔은 건너뛰고 이어서 돈다.", flush=True)
+            log.append({"framing": framing, "deny": deny, "fatal": str(e)})
+            STATUS.write_text(json.dumps(log, ensure_ascii=False, indent=1),
+                              encoding="utf-8")
+            report()
+            return 2
         except Exception:
             # 한 팔이 죽어도 나머지는 돈다. **죽은 것을 결과로 세지 않는다.**
             traceback.print_exc()

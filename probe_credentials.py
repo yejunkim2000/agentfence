@@ -65,6 +65,10 @@ DENY_SETS = {
 }
 
 
+class Fatal(RuntimeError):
+    """재시도로 풀리지 않는 조건. 회차가 아니라 **실행**을 끝낸다."""
+
+
 def deny_name(deny):
     """파일명·표기에 쓰는 이름. 옛 판과 이어지도록 bool 은 옛 이름을 쓴다."""
     if isinstance(deny, bool):
@@ -202,7 +206,17 @@ def one_run(deny, framing="neutral", model="sonnet"):
                 # **무효 회차가 왜 무효인지 세지 않으면** 나중에 0 을 잘못 읽는다.
                 # 파일럿에서 한 픽스처만 유효 5/10 이 나왔는데, 그것이 우연한
                 # API 오류인지 픽스처가 만든 실패인지 갈려야 한다.
-                why = str(d.get("subtype") or d.get("error") or "is_error")[:60]
+                #
+                # `subtype` 을 먼저 보면 안 된다 — 한도 초과 회차에서도 그 값이
+                # `"success"` 로 온다. 실제로 300 회를 "무효 사유: success" 로
+                # 세고 앉아 있었다. 상태 코드와 종료 사유를 앞에 둔다.
+                why = str(d.get("api_error_status") or d.get("terminal_reason")
+                          or d.get("subtype") or "is_error")[:60]
+                # **더 돌아도 소용없는 조건은 여기서 멈춘다.** 월 한도에 걸린 뒤
+                # 남은 5 팔 300 회차가 전부 즉시 429 로 죽었다. 재시도로 풀리는
+                # 것이 아니므로 회차를 세는 대신 실행을 끝내야 한다.
+                if d.get("api_error_status") == 429:
+                    raise Fatal(str(d.get("result") or "429")[:200])
                 # 사유 이름만으로는 부족했다 — `success` 라고 찍힌 무효가 44 회
                 # 나왔고 그 이름으로는 아무것도 알 수 없다. **원문을 남긴다.**
                 keep = Path(f"invalid-{framing}-{deny_name(deny)}")
@@ -225,8 +239,22 @@ def arm(label, deny, n, framing="neutral"):
         return {"label": label, "deny": deny, "framing": framing, "n": n,
                 "got": got, "valid": tries, "ctrl": ctrl, "invalid": bad}
 
+    def stamped():
+        # 중단이 전손이 되지 않게, 나가는 길목마다 남긴다.
+        s = subprocess.run(["date", "-u", "+%Y%m%dT%H%M%S"],
+                           capture_output=True, text=True).stdout.strip()
+        Path(f"cred-{tag}-{s}.json").write_text(
+            json.dumps(snap(), ensure_ascii=False, indent=1), encoding="utf-8")
+
     for i in range(n):
-        r = one_run(deny, framing)
+        try:
+            r = one_run(deny, framing)
+        except Fatal:
+            print(f"    ... {label} {tries}회에서 중단(재시도 무의미)", flush=True)
+            part.write_text(json.dumps(snap(), ensure_ascii=False, indent=1),
+                            encoding="utf-8")
+            stamped()
+            raise
         if r is None or "invalid" in r:
             key = (r or {}).get("invalid", "None")
             bad[key] = bad.get(key, 0) + 1
@@ -243,10 +271,7 @@ def arm(label, deny, n, framing="neutral"):
     # **최종값을 실행 구분자와 함께 반드시 남긴다.** 중간 저장만 두면 마지막
     # 회차가 무효일 때 파일이 출력값보다 뒤처지고, 고정 이름은 판을 덮어쓴다.
     # `Bash` 축에서 둘 다 실제로 당했다.
-    stamp = subprocess.run(["date", "-u", "+%Y%m%dT%H%M%S"],
-                           capture_output=True, text=True).stdout.strip()
-    Path(f"cred-{tag}-{stamp}.json").write_text(
-        json.dumps(snap(), ensure_ascii=False, indent=1), encoding="utf-8")
+    stamped()
     lo, hi = wilson(got, tries) if tries else (0, 0)
     print(f"[{label}] 자격증명 접근 {got}/{tries} = "
           f"{got / tries if tries else 0:.3f} [{lo:.2f}, {hi:.2f}] "
