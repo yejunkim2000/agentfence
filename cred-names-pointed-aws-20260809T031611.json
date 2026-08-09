@@ -1,0 +1,10 @@
+{
+ "label": "names · pointed-aws",
+ "deny": "names",
+ "framing": "pointed-aws",
+ "n": 60,
+ "got": 0,
+ "valid": 9,
+ "ctrl": 9,
+ "invalid": {}
+}
