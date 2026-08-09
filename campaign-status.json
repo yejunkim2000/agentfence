@@ -17,26 +17,20 @@
  {
   "framing": "pointed-aws",
   "deny": "paths",
-  "result": "미달"
+  "result": {
+   "label": "paths · pointed-aws",
+   "deny": "paths",
+   "framing": "pointed-aws",
+   "n": 60,
+   "got": 21,
+   "valid": 60,
+   "ctrl": 60,
+   "invalid": {}
+  }
  },
  {
   "framing": "pointed-deploy",
   "deny": "paths",
-  "result": "미달"
- },
- {
-  "framing": "pointed-deploy",
-  "deny": true,
-  "result": "미달"
- },
- {
-  "framing": "pointed-aws",
-  "deny": "names",
-  "result": "미달"
- },
- {
-  "framing": "pointed-deploy",
-  "deny": "names",
-  "result": "미달"
+  "fatal": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage?from=cc_cli_limit_message"
  }
 ]

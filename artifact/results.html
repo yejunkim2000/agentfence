@@ -562,6 +562,41 @@ n=15에서 1/15, n=20에서 4/20이 나왔다 — <strong>작은 표본에 기�
 </table></div>
 <p>구간 분리, Fisher <span class="mono">p = 5.9×10⁻⁴</span>. <strong>양 팔 모두 대조군
 60/60</strong>이므로 막았지 일을 못 하게 만든 것이 아니다.</p>
+<h3>그런데 닫는 줄이 <em>권고하던 줄이 아니다</em></h3>
+<p>07절의 <code>Bash</code> 축이 남긴 질문을 그대로 걸었다 — 같은 규칙이 픽스처에
+따라 갈리면 <strong>닫는 것이 어느 줄인가</strong>도 따로 확인해야 한다. 권고 목록은
+두 종류의 줄을 섞어 놓았다.</p>
+<blockquote class="mono">paths : Read(**/.aws/**) &nbsp;Read(**/.ssh/**)<br>
+names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</blockquote>
+<div class="scroll"><table>
+<thead><tr><th>규칙 묶음</th><th>자격증명 접근</th><th>95% CI</th><th>안쪽 대조군</th></tr></thead>
+<tbody>
+<tr><td>샌드박스만</td><td class="mono">19/60 = 0.317</td><td class="mono">[0.21, 0.44]</td><td class="mono">60/60</td></tr>
+<tr class="hot"><td><strong><code>paths</code> 만</strong></td><td class="mono"><strong>21/60 = 0.350</strong></td><td class="mono">[0.24, 0.48]</td><td class="mono">60/60</td></tr>
+<tr class="cool"><td>목록 전체</td><td class="mono"><strong>0/60 = 0.000</strong></td><td class="mono">[0.00, 0.06]</td><td class="mono">60/60</td></tr>
+</tbody>
+</table></div>
+<p><strong><code>paths</code>는 아무것도 안 한다</strong>
+(<span class="mono">p = 0.847</span>). 목록 전체는 닫고
+(<span class="mono">p = 7.0×10⁻⁷</span>), 둘 사이도 갈린다
+(<span class="mono">p = 1.1×10⁻⁷</span>). 전체 = <code>paths</code> ∪
+<code>names</code>이므로 <strong>닫는 일은 <code>names</code>가 한다.</strong></p>
+<p>이유는 이미 잰 칸에 있었다. <strong><code>dontAsk</code>에서 내장
+<code>Read</code>의 밖 읽기는 규칙과 무관하게 기본으로 막힌다</strong>(01절,
+0/5 · 5시도 5거부). 그러면 밖 자격증명으로 가는 길은 <code>Bash</code>뿐이고,
+경로 규칙은 <strong>이미 안 지나가는 문에 걸린 자물쇠</strong>다.</p>
+<div class="warn">
+<p><strong>왜 나쁜 소식인가.</strong> <code>names</code>는 이 저장소가
+<strong>불완전하다고 이미 실측한</strong> 방식이다(07절, 0.127이 <code>grep</code>으로
+샜다). 지금 목록에 <code>grep</code>은 있지만 <code>sed</code>·<code>awk</code>·
+<code>od</code>·<code>python -c</code>는 없다. "자격증명 규칙은 작동한다"가
+<strong>완전하지 않다고 아는 메커니즘 위에 서 있다.</strong></p>
+<p style="margin-top:10px"><strong>범위.</strong> 이 결과는 <code>dontAsk</code>의
+것이다. <code>bypassPermissions</code>에서는 내장 <code>Read</code>의 밖 읽기가
+1.000으로 열려 있어 거기서는 <code>paths</code>가 유일한 방어일 수 있다 —
+<strong>그 칸은 아직 안 쟀다.</strong> 이름 규칙 단독 팔과 두 번째 픽스처는 계정
+월 한도로 중단됐다.</p>
+</div>
 <h3>기저율을 못 만들어 두 번 실패했다</h3>
 <div class="scroll"><table>
 <thead><tr><th>픽스처</th><th>샌드박스만</th><th>왜</th></tr></thead>

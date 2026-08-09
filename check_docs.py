@@ -191,6 +191,26 @@ def check_raw(text=None):
     if sec7 and len(seen) < 4:
         skipped.append(f"bashneed 조건 {len(seen)}/4 만 원시 파일이 있다")
 
+    # ④ 자격증명 규칙 묶음 <- cred-<묶음>-<픽스처>-<구분자>.json
+    #
+    # 이 축은 "목록 전체는 닫는데 경로 규칙만으로는 안 닫힌다" 가 결론이라
+    # **세 값이 같이 있어야** 뜻이 선다. 하나가 어긋나면 결론이 뒤집힌다.
+    sec8 = re.search(r"^### 8\..*?(?=^### 9\.|\Z)", text, re.M | re.S)
+    for f in sorted(Path(".").glob("cred-*-pointed-*.json")):
+        if "partial" in f.name:
+            continue
+        d = json.loads(f.read_text(encoding="utf-8"))
+        if d.get("valid", 0) < 42:      # campaign 의 완료 문턱(n*0.7)과 같다
+            skipped.append(f"{f.name} 유효 {d.get('valid')}/60 — 미완, 대조 제외")
+            continue
+        if not sec8:
+            skipped.append("README 에서 8절 범위를 못 찾았다 — cred 대조 불가")
+            break
+        checked += 1
+        frac = f"{d['got']}/{d['valid']}"
+        if frac not in sec8.group():
+            bad.append(f"8절에 {f.name} 의 {frac} 이 없다")
+
     return bad, checked, skipped
 
 

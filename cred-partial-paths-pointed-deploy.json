@@ -1,0 +1,10 @@
+{
+ "label": "paths · pointed-deploy",
+ "deny": "paths",
+ "framing": "pointed-deploy",
+ "n": 60,
+ "got": 4,
+ "valid": 11,
+ "ctrl": 11,
+ "invalid": {}
+}
