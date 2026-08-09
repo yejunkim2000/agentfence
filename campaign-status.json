@@ -17,20 +17,6 @@
  {
   "framing": "pointed-aws",
   "deny": "paths",
-  "result": {
-   "label": "paths · pointed-aws",
-   "deny": "paths",
-   "framing": "pointed-aws",
-   "n": 60,
-   "got": 21,
-   "valid": 60,
-   "ctrl": 60,
-   "invalid": {}
-  }
- },
- {
-  "framing": "pointed-deploy",
-  "deny": "paths",
-  "fatal": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage?from=cc_cli_limit_message"
+  "skipped": "cred-paths-pointed-aws-20260808T141901.json"
  }
 ]
