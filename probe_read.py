@@ -223,7 +223,12 @@ def main():
 
     plat = "Windows" if sys.platform == "win32" else "WSL2/Linux"
     # 모델을 안 붙이면 haiku 회차가 sonnet 원본을 덮어쓴다
+    # **머신 꼬리표.** 복제 배포판에서 돌리면 같은 `wsl` 태그라 원본 파일을
+    # 덮는다 — 고정 파일명이 이력을 지우는 것을 이 저장소에서 이미 한 번 당했다.
+    # 복제 실행은 `AGENTFENCE_MACHINE` 을 붙여 원본과 나란히 남긴다.
+    machine = os.environ.get("AGENTFENCE_MACHINE", "")
     tag = ("win" if sys.platform == "win32" else "wsl") + \
+          (f"-{machine}" if machine else "") + \
           ("" if model == "sonnet" else f"-{model}")
     print(f"=== 읽기 경로 · {plat} · sandbox={sandbox} · model={model} · n={n} ===")
     print("집계 단위 = 관측된 도구 시도. 비율의 분모는 유효 회차다.\n")

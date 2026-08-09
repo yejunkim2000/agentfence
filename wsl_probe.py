@@ -4,6 +4,7 @@
 나와 플랫폼 비교가 무의미해진다. failIfUnavailable=true는 "샌드박스 없이 조용히
 실행"을 하드 실패로 만든다 — 공식 문서상 이게 없으면 경고만 내고 그냥 돈다.
 """
+import os
 import json
 import math
 import sys
@@ -59,7 +60,12 @@ def main():
         # 이력이 남지 않는다. 실제로 E-B1 dontAsk 1차(25:5)가 그렇게 사라졌고,
         # 문서는 통합 46/60 을 인용하는데 디스크에는 2차분만 있다.
         stamp = time.strftime("%Y%m%dT%H%M%S")
-        out = Path(f"wsl-{Path(target).stem}-{mode}-{stamp}.json")
+        # 복제 배포판 실행은 머신 꼬리표를 붙인다. 안 붙이면 원본과 같은 이름
+        # 모양이라 문서 대조가 두 머신의 값을 같은 칸으로 본다 — 복제는
+        # **다른 주장**이므로 파일부터 갈라 놓는다.
+        machine = os.environ.get("AGENTFENCE_MACHINE", "")
+        mtag = f"-{machine}" if machine else ""
+        out = Path(f"wsl{mtag}-{Path(target).stem}-{mode}-{stamp}.json")
         out.write_text(json.dumps({
             "case": target, "mode": mode, "n": n,
             "attempts": attempts, "valid": valid,

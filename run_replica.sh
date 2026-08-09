@@ -23,6 +23,10 @@ set -e
 CLAUDE="$HOME/node-v22.11.0-linux-x64/bin/claude"
 [ -x "$CLAUDE" ] || { echo "claude 없음 — setup_replica.sh 먼저"; exit 1; }
 export AGENTFENCE_CLAUDE="$CLAUDE"
+# 결과 파일에 머신 꼬리표를 붙인다. 안 붙이면 복제 결과가 원본 파일을 덮거나
+# (`read-grid-wsl.json`) 문서 대조가 두 머신 값을 같은 칸으로 본다.
+# **복제는 다른 주장**이므로 파일부터 갈라 놓는다.
+export AGENTFENCE_MACHINE="replica"
 
 cd /mnt/c/Users/yejun/agentfence
 export PYTHONIOENCODING=utf-8

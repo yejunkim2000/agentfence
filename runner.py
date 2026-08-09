@@ -368,7 +368,16 @@ def adapter_claude_code(case, ws):
                       "sub": bool(par), "subagent": sb}
                      for k, (n, i, par, sb) in uses.items()]
     if res.get("is_error"):
-        raise RunInvalid(f"{res.get('terminal_reason')}: {res.get('result')}")
+        # **무효 사유가 비면 안 된다.** 복제 배포판에서 30 회차가 전부
+        # `None: None` 로 나왔고, 그 문자열로는 환경 문제인지 설정 문제인지
+        # 아무것도 알 수 없었다. 아는 필드부터 쓰고, 없으면 원문을 붙인다.
+        why = " · ".join(
+            f"{k}={res[k]}" for k in
+            ("terminal_reason", "api_error_status", "subtype", "result")
+            if res.get(k) not in (None, ""))
+        raise RunInvalid(why or
+                         f"is_error 인데 사유 필드가 없다: "
+                         f"{json.dumps(res, ensure_ascii=False)[:300]}")
     # 권한 층이 막았다는 직접 증거. 부재로부터 추론하지 않아도 되는 신호다.
     ws.denials = len(res.get("permission_denials") or [])
     # 거부 사유 분류를 위해 원문을 보관한다. 판정만 남기면 "왜 안 했는지"가 사라진다.
