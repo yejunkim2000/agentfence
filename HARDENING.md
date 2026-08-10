@@ -34,8 +34,11 @@
 > ## ⚠️ 먼저: 이 설정은 **`bubblewrap` 이 깔려 있어야** 작동한다
 >
 > ```
-> sudo apt install bubblewrap      # Debian/Ubuntu
+> sudo apt install bubblewrap socat      # Debian/Ubuntu — 둘 다 필요하다
 > ```
+>
+> 의존은 **둘**이고, 하나만 넣으면 같은 상태다(직접 겪었다). CLI 가 그렇게 말한다:
+> `dependencies are missing: socat not installed`.
 >
 > 이 문서가 재 온 **유일한 OS 강제 층**은 `bwrap` 이 없으면 서지 않는다.
 > 두 번째 배포판(같은 Ubuntu 24.04, 같은 커널, `bwrap` 만 없음)에서 실측했다.
@@ -52,6 +55,17 @@
 >
 > 안전한 쪽으로 틀리게 만드는 설정이라는 뜻이다. 못 세우면 **안 도는 편이**
 > 모르고 도는 것보다 낫다.
+>
+> ### 그리고 그 경고는 `stderr` 로만 나온다
+>
+> `failIfUnavailable: false` 로 도는 회차의 `stdout`(JSON 스트림)에는
+> **아무 흔적이 없다** — `is_error: false`, 오류 필드 없음, 정상 회차와 구별
+> 불가. 경고는 `stderr` 에만 있다.
+>
+> **`--output-format stream-json` 만 읽는 CI 는 강제 층이 사라진 것을 못 본다.**
+> 이 저장소의 하네스가 정확히 그랬다. 자동화한다면 `stderr` 도 같이 읽고
+> `Sandbox disabled` 를 실패로 다뤄야 한다 — 아니면 그냥
+> `failIfUnavailable: true` 를 켜서 종료 코드로 받는다.
 
 > ## ⚠️ `deny: ["Bash"]` 는 **답이 파일 바이트로 안 읽힐 때만** 효과를 막는다
 >

@@ -28,6 +28,27 @@ export AGENTFENCE_CLAUDE="$CLAUDE"
 # **복제는 다른 주장**이므로 파일부터 갈라 놓는다.
 export AGENTFENCE_MACHINE="replica"
 
+# 샌드박스는 `bwrap` 이 있어야 선다. 이 배포판에는 없었고, sudo 가 암호를
+# 요구해서 **root 없이 홈에 놓았다**(install_bwrap_local.sh). 같은 저장소의
+# 같은 패키지라 측정 대상은 같고 다른 것은 설치 위치뿐이다.
+if [ -d "$HOME/bwrap-local/usr/bin" ]; then
+    PATH="$HOME/bwrap-local/usr/bin:$PATH"
+    export PATH
+    LD_LIBRARY_PATH="$(ls -d "$HOME"/bwrap-local/usr/lib/*-linux-gnu 2>/dev/null | tr '\n' ':')${LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH
+fi
+# **의존은 둘이다.** CLI 가 그렇게 말한다("dependencies are missing: socat not
+# installed · install missing tools (e.g. apt install bubblewrap socat)").
+# bwrap 만 넣고 돌렸다가 같은 오류를 또 봤다.
+for b in bwrap socat; do
+    command -v "$b" >/dev/null 2>&1 || {
+        echo "$b 없음 — 샌드박스가 서지 않는다."
+        echo "  sh install_bwrap_local.sh   또는   sudo apt install bubblewrap socat"
+        exit 3
+    }
+done
+echo "bwrap: $(command -v bwrap) · socat: $(command -v socat)"
+
 cd /mnt/c/Users/yejun/agentfence
 export PYTHONIOENCODING=utf-8
 

@@ -155,6 +155,37 @@ T2는 표적과 무관하게 거부된다(05). 하나로 묶어 읽으면 안 �
 모르고 도는 것보다 낫다. <strong>복제의 값은 "같은 값이 또 나왔다"만이 아니라
 환경 차이가 무엇을 드러내는가에도 있다.</strong></p>
 </div>
+<p>의존은 <strong>둘</strong>이다(<code>bubblewrap</code> + <code>socat</code>).
+<strong>그리고 그 경고는 <code>stderr</code>로만 나온다</strong> — 같은 회차의
+<code>stdout</code>(JSON 스트림)은 <span class="mono">is_error: false</span>에 오류
+필드 하나 없이 정상 회차로 보인다.</p>
+<div class="warn">
+<p><strong><code>--output-format stream-json</code>만 읽는 자동화는 강제 층이
+사라진 것을 볼 수 없다.</strong> 이 저장소의 하네스가 정확히 그랬고, 그래서
+10/10이 그냥 통과로 기록됐다. 자동화한다면 <code>stderr</code>도 같이 읽어
+<span class="mono">Sandbox disabled</span>를 실패로 다루거나,
+<code>failIfUnavailable: true</code>를 켜서 종료 코드로 받아야 한다.</p>
+</div>
+
+<h3>그리고 두 번째 배포판에서 <em>복제됐다</em></h3>
+<p>같은 Windows 호스트의 다른 WSL2 배포판. 통제된 것은 파일시스템·HOME·누적 설정·
+node·CLI 버전·<code>bubblewrap</code> 버전이고 <strong>계정·하드웨어·호스트·모델
+서빙은 그대로</strong>다 — <strong>부분 복제</strong>다.</p>
+<div class="scroll"><table>
+<thead><tr><th>칸</th><th>원본</th><th>복제</th><th></th></tr></thead>
+<tbody>
+<tr class="cool"><td>① Bash 경유 밖 쓰기 · <code>bypassPermissions</code></td><td class="mono">0/60 [0.00, 0.06]</td><td class="mono"><strong>0/10</strong> [0.00, 0.28]</td><td>재현. 막은 층은 양쪽 다 전부 <code>enforcement</code> <span class="mono">(60/60 · 10/10)</span></td></tr>
+<tr><td>② 같은 칸 · <code>dontAsk</code> 층 분해</td><td class="mono">perm 46/60</td><td class="mono">perm <strong>9/10</strong></td><td class="mono">p = 0.678</td></tr>
+<tr><td>③ 밖 읽기 · <code>dontAsk</code></td><td class="mono">16/20 = 0.800 [0.58, 0.92]</td><td class="mono"><strong>33/40 = 0.825</strong> [0.68, 0.91]</td><td class="mono">p = 1.000</td></tr>
+<tr><td>③ 밖 읽기 · <code>acceptEdits</code></td><td class="mono">12/20 = 0.600 [0.39, 0.78]</td><td class="mono"><strong>28/40 = 0.700</strong> [0.55, 0.82]</td><td class="mono">p = 0.563</td></tr>
+</tbody>
+</table></div>
+<p><strong>메커니즘까지 같다.</strong> 복제에서도 내장 <code>Read</code>의 밖 읽기는
+<strong>시도 33회 전부 거부</strong>, <code>Bash</code>는 55회 중 2회만 거부다.
+샌드박스가 <code>Bash</code>를 자동 승인하고 권한 층이 그 명령을 안 본다는 설명이
+<strong>다른 인스턴스에서 같은 모양으로 나온다.</strong> 읽기 역전도 남는다 —
+Windows <code>dontAsk</code> 0/20 [0.00, 0.16] 대 복제 33/40 [0.68, 0.91],
+<span class="mono">p = 2.1×10⁻¹⁰</span>.</p>
 
 <h3>쓰기도 경로에 따라 갈린다</h3>
 <p>읽기 역전에 가려지기 쉬운데, <strong><code>bypassPermissions</code>에서 WSL2의

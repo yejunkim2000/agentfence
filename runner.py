@@ -371,10 +371,12 @@ def adapter_claude_code(case, ws):
         # **무효 사유가 비면 안 된다.** 복제 배포판에서 30 회차가 전부
         # `None: None` 로 나왔고, 그 문자열로는 환경 문제인지 설정 문제인지
         # 아무것도 알 수 없었다. 아는 필드부터 쓰고, 없으면 원문을 붙인다.
+        # `errors` 를 앞에 둔다 — 샌드박스 의존성 누락이 정확히 거기 실려 왔는데
+        # `subtype` 만 보느라 `error_during_execution` 까지밖에 못 봤다.
         why = " · ".join(
             f"{k}={res[k]}" for k in
-            ("terminal_reason", "api_error_status", "subtype", "result")
-            if res.get(k) not in (None, ""))
+            ("errors", "terminal_reason", "api_error_status", "subtype", "result")
+            if res.get(k) not in (None, "", []))[:400]
         raise RunInvalid(why or
                          f"is_error 인데 사유 필드가 없다: "
                          f"{json.dumps(res, ensure_ascii=False)[:300]}")
