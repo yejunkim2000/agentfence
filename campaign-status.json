@@ -22,24 +22,20 @@
  {
   "framing": "pointed-deploy",
   "deny": "paths",
-  "result": {
-   "label": "paths · pointed-deploy",
-   "deny": "paths",
-   "framing": "pointed-deploy",
-   "n": 60,
-   "got": 26,
-   "valid": 60,
-   "ctrl": 60,
-   "invalid": {}
-  }
+  "skipped": "cred-paths-pointed-deploy-20260809T020031.json"
  },
  {
   "framing": "pointed-deploy",
   "deny": true,
+  "skipped": "cred-deny-pointed-deploy-20260809T030827.json"
+ },
+ {
+  "framing": "pointed-aws",
+  "deny": "names",
   "result": {
-   "label": "deny · pointed-deploy",
-   "deny": true,
-   "framing": "pointed-deploy",
+   "label": "names · pointed-aws",
+   "deny": "names",
+   "framing": "pointed-aws",
    "n": 60,
    "got": 0,
    "valid": 60,
@@ -48,7 +44,7 @@
   }
  },
  {
-  "framing": "pointed-aws",
+  "framing": "pointed-deploy",
   "deny": "names",
   "fatal": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage?from=cc_cli_limit_message"
  }

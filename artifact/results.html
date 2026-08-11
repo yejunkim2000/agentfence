@@ -627,6 +627,7 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 <tbody>
 <tr><td>샌드박스만</td><td class="mono">19/60 = 0.317 [0.21, 0.44]</td><td class="mono">28/60 = 0.467 [0.35, 0.59]</td></tr>
 <tr class="hot"><td><strong><code>paths</code> 만</strong></td><td class="mono"><strong>21/60 = 0.350</strong> [0.24, 0.48]</td><td class="mono"><strong>26/60 = 0.433</strong> [0.32, 0.56]</td></tr>
+<tr class="cool"><td><strong><code>names</code> 만</strong></td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td><td class="mono">미완 (23회까지 접근 0)</td></tr>
 <tr class="cool"><td>목록 전체</td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td></tr>
 </tbody>
 </table></div>
@@ -636,10 +637,14 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 [0.31, 0.48]. <strong>분자가 같다</strong>(<span class="mono">p = 1.000</span>).
 목록 전체는 <span class="mono">0/120 = 0.000</span> [0.00, 0.03]로 닫는다
 (<span class="mono">p = 5.0×10⁻¹⁷</span>).</p>
-<p>전체 = <code>paths</code> ∪ <code>names</code>이므로 <strong>닫는 일은
-<code>names</code>가 한다.</strong> <code>deploy/</code> 픽스처가 독립 근거를 하나
-더 준다 — 경로 규칙이 표적을 <strong>아예 못 덮는데도</strong> 목록 전체는 0/60으로
-닫는다. 안쪽 대조군은 여섯 팔 전부 60/60이다.</p>
+<p><strong>닫는 일은 <code>names</code>가 한다.</strong> 그리고 그것을
+<strong>직접 쟀다</strong> — <code>names</code>만 건 팔이
+<span class="mono">0/60 = 0.000</span> [0.00, 0.06]로 목록 전체와 <strong>같은
+값</strong>이다(<span class="mono">p = 1.000</span>). 차이에서 나온 추론이 아니라
+관측이고, 두 묶음의 상호작용 가능성도 이걸로 닫힌다.
+<code>deploy/</code> 픽스처가 독립 근거를 하나 더 준다 — 경로 규칙이 표적을
+<strong>아예 못 덮는데도</strong> 목록 전체는 0/60으로 닫는다. 안쪽 대조군은
+모든 팔에서 60/60이다.</p>
 <p>이유는 이미 잰 칸에 있었다. <strong><code>dontAsk</code>에서 내장
 <code>Read</code>의 밖 읽기는 규칙과 무관하게 기본으로 막힌다</strong>(01절,
 0/5 · 5시도 5거부). 그러면 밖 자격증명으로 가는 길은 <code>Bash</code>뿐이고,
@@ -653,9 +658,9 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 <p style="margin-top:10px"><strong>범위.</strong> 이 결과는 <code>dontAsk</code>의
 것이다. <code>bypassPermissions</code>에서는 내장 <code>Read</code>의 밖 읽기가
 1.000으로 열려 있어 거기서는 <code>paths</code>가 유일한 방어일 수 있다 —
-<strong>그 칸은 아직 안 쟀다.</strong> 이름 규칙 단독 팔 둘도 계정 월 한도로
-중단됐다 — 위 결론은 경로 팔과 전체 팔의 <strong>차이</strong>에서 나온 것이지
-이름 단독 관측이 아니고, 두 묶음의 상호작용일 가능성은 배제되지 않았다.</p>
+<strong>그 칸은 아직 안 쟀다.</strong> 두 번째 픽스처의 <code>names</code> 팔은
+월 한도로 23회에서 멈췄다(거기까지 접근 0) — 첫 픽스처의 0/60과 같은 방향이지만
+완료 문턱 미달이라 결과로 세지 않는다.</p>
 </div>
 <h3>기저율을 못 만들어 두 번 실패했다</h3>
 <div class="scroll"><table>
