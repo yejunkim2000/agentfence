@@ -627,7 +627,7 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 <tbody>
 <tr><td>샌드박스만</td><td class="mono">19/60 = 0.317 [0.21, 0.44]</td><td class="mono">28/60 = 0.467 [0.35, 0.59]</td></tr>
 <tr class="hot"><td><strong><code>paths</code> 만</strong></td><td class="mono"><strong>21/60 = 0.350</strong> [0.24, 0.48]</td><td class="mono"><strong>26/60 = 0.433</strong> [0.32, 0.56]</td></tr>
-<tr class="cool"><td><strong><code>names</code> 만</strong></td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td><td class="mono">미완 (23회까지 접근 0)</td></tr>
+<tr class="cool"><td><strong><code>names</code> 만</strong></td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td><td class="mono"><strong>0/46 = 0.000</strong> [0.00, 0.08]</td></tr>
 <tr class="cool"><td>목록 전체</td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td><td class="mono"><strong>0/60 = 0.000</strong> [0.00, 0.06]</td></tr>
 </tbody>
 </table></div>
@@ -638,10 +638,13 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 목록 전체는 <span class="mono">0/120 = 0.000</span> [0.00, 0.03]로 닫는다
 (<span class="mono">p = 5.0×10⁻¹⁷</span>).</p>
 <p><strong>닫는 일은 <code>names</code>가 한다.</strong> 그리고 그것을
-<strong>직접 쟀다</strong> — <code>names</code>만 건 팔이
-<span class="mono">0/60 = 0.000</span> [0.00, 0.06]로 목록 전체와 <strong>같은
-값</strong>이다(<span class="mono">p = 1.000</span>). 차이에서 나온 추론이 아니라
-관측이고, 두 묶음의 상호작용 가능성도 이걸로 닫힌다.
+<strong>직접 쟀다</strong> — <code>names</code>만 건 팔이 <strong>두 픽스처 모두</strong>
+목록 전체와 같은 값이다(<span class="mono">p = 1.000</span> 양쪽). 차이에서 나온
+추론이 아니라 관측이고, 두 묶음의 상호작용 가능성도 이걸로 닫힌다.
+통합하면 <code>paths</code>만 <span class="mono">47/120 = 0.392</span> [0.31, 0.48],
+<code>names</code>만 <span class="mono">0/106 = 0.000</span> [0.00, 0.03]로
+<span class="mono">p = 6.2×10⁻¹⁶</span> — <strong>같은 목록 안의 두 줄이
+정반대다.</strong>
 <code>deploy/</code> 픽스처가 독립 근거를 하나 더 준다 — 경로 규칙이 표적을
 <strong>아예 못 덮는데도</strong> 목록 전체는 0/60으로 닫는다. 안쪽 대조군은
 모든 팔에서 60/60이다.</p>
@@ -658,9 +661,10 @@ names : Bash(cat:*) &nbsp;Bash(grep:*) &nbsp;Bash(head:*) &nbsp;Bash(tail:*)</bl
 <p style="margin-top:10px"><strong>범위.</strong> 이 결과는 <code>dontAsk</code>의
 것이다. <code>bypassPermissions</code>에서는 내장 <code>Read</code>의 밖 읽기가
 1.000으로 열려 있어 거기서는 <code>paths</code>가 유일한 방어일 수 있다 —
-<strong>그 칸은 아직 안 쟀다.</strong> 두 번째 픽스처의 <code>names</code> 팔은
-월 한도로 23회에서 멈췄다(거기까지 접근 0) — 첫 픽스처의 0/60과 같은 방향이지만
-완료 문턱 미달이라 결과로 세지 않는다.</p>
+<strong>그 칸은 아직 안 쟀다.</strong> 그 밖에는 이 축이 닫혔다 — 여덟 팔 전부
+성립했고 안쪽 대조군은 모든 팔에서 만점이다. 두 번째 픽스처의 <code>names</code>
+팔만 월 한도로 <strong>46회</strong>에서 멈췄고(계획 60, 완료 문턱은 넘김),
+그래서 분모를 60이 아니라 46으로 적는다.</p>
 </div>
 <h3>기저율을 못 만들어 두 번 실패했다</h3>
 <div class="scroll"><table>

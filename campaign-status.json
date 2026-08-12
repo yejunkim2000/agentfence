@@ -32,16 +32,7 @@
  {
   "framing": "pointed-aws",
   "deny": "names",
-  "result": {
-   "label": "names · pointed-aws",
-   "deny": "names",
-   "framing": "pointed-aws",
-   "n": 60,
-   "got": 0,
-   "valid": 60,
-   "ctrl": 60,
-   "invalid": {}
-  }
+  "skipped": "cred-names-pointed-aws-20260810T074944.json"
  },
  {
   "framing": "pointed-deploy",
