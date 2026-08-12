@@ -1,0 +1,11 @@
+{
+ "label": "deny · pointed-aws · bypassPermissions",
+ "deny": true,
+ "framing": "pointed-aws",
+ "n": 60,
+ "mode": "bypassPermissions",
+ "got": 46,
+ "valid": 60,
+ "ctrl": 60,
+ "invalid": {}
+}
