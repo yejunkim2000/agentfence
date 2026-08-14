@@ -89,12 +89,14 @@ def run(label, settings, strip_path):
 
 def main():
     base = {"enabled": True, "allowUnsandboxedCommands": False}
+    # 라벨은 **영문**이다. 이 파일이 벤더 제보의 첨부로 나가는데, 한국어 라벨은
+    # 트리아저가 못 읽는다. 산출물의 독자를 생각해야 한다.
     out = [
-        run("A 의존 있음 · 샌드박스 켬",
+        run("A: deps present, sandbox on",
             {"sandbox": dict(base, failIfUnavailable=True)}, strip_path=False),
-        run("B 의존 없음 · failIfUnavailable=false",
+        run("B: deps missing, failIfUnavailable=false",
             {"sandbox": dict(base, failIfUnavailable=False)}, strip_path=True),
-        run("C 의존 없음 · failIfUnavailable=true",
+        run("C: deps missing, failIfUnavailable=true",
             {"sandbox": dict(base, failIfUnavailable=True)}, strip_path=True),
     ]
     Path("verify-silent-fail.json").write_text(

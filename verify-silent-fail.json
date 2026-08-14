@@ -1,6 +1,6 @@
 [
  {
-  "label": "A 의존 있음 · 샌드박스 켬",
+  "label": "A: deps present, sandbox on",
   "rc": 0,
   "is_error": false,
   "stdout_hits": 0,
@@ -8,7 +8,7 @@
   "stderr_first": ""
  },
  {
-  "label": "B 의존 없음 · failIfUnavailable=false",
+  "label": "B: deps missing, failIfUnavailable=false",
   "rc": 0,
   "is_error": false,
   "stdout_hits": 0,
@@ -16,7 +16,7 @@
   "stderr_first": "⚠ Sandbox disabled: sandbox is enabled but dependencies are missing: bubblewrap (bwrap) not installed, socat not installed · install missing tools (e.g. apt install bubblewrap socat) or see https://co"
  },
  {
-  "label": "C 의존 없음 · failIfUnavailable=true",
+  "label": "C: deps missing, failIfUnavailable=true",
   "rc": 1,
   "is_error": true,
   "stdout_hits": 1,
