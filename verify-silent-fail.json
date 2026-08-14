@@ -1,0 +1,26 @@
+[
+ {
+  "label": "A 의존 있음 · 샌드박스 켬",
+  "rc": 0,
+  "is_error": false,
+  "stdout_hits": 0,
+  "stderr_has": false,
+  "stderr_first": ""
+ },
+ {
+  "label": "B 의존 없음 · failIfUnavailable=false",
+  "rc": 0,
+  "is_error": false,
+  "stdout_hits": 0,
+  "stderr_has": true,
+  "stderr_first": "⚠ Sandbox disabled: sandbox is enabled but dependencies are missing: bubblewrap (bwrap) not installed, socat not installed · install missing tools (e.g. apt install bubblewrap socat) or see https://co"
+ },
+ {
+  "label": "C 의존 없음 · failIfUnavailable=true",
+  "rc": 1,
+  "is_error": true,
+  "stdout_hits": 1,
+  "stderr_has": true,
+  "stderr_first": "Error: sandbox required but unavailable: sandbox is enabled but dependencies are missing: bubblewrap (bwrap) not installed, socat not installed · install missing tools (e.g. apt install bubblewrap soc"
+ }
+]
