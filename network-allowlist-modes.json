@@ -1,0 +1,44 @@
+{
+ "n": 30,
+ "arms": [
+  {
+   "label": "G bypass · 허용 없음",
+   "host": "example.com",
+   "sandbox": true,
+   "allow": false,
+   "mode": "bypassPermissions",
+   "strict": false,
+   "arrived": 0,
+   "curl_ok": 29,
+   "ran": 29,
+   "valid": 30,
+   "invalid": {}
+  },
+  {
+   "label": "H bypass · strictAllowlist",
+   "host": "example.com",
+   "sandbox": true,
+   "allow": false,
+   "mode": "bypassPermissions",
+   "strict": true,
+   "arrived": 0,
+   "curl_ok": 0,
+   "ran": 29,
+   "valid": 30,
+   "invalid": {}
+  },
+  {
+   "label": "I dontAsk · 허용 없음",
+   "host": "example.com",
+   "sandbox": true,
+   "allow": false,
+   "mode": "dontAsk",
+   "strict": false,
+   "arrived": 0,
+   "curl_ok": 0,
+   "ran": 30,
+   "valid": 30,
+   "invalid": {}
+  }
+ ]
+}
