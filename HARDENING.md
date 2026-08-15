@@ -79,6 +79,14 @@
 > 안전한 쪽으로 틀리게 만드는 설정이라는 뜻이다. 못 세우면 **안 도는 편이**
 > 모르고 도는 것보다 낫다.
 >
+> **이 fail-open 은 공식 문서에 명시돼 있다** — *"if the sandbox cannot start
+> because dependencies are missing … shows a warning and runs commands without
+> sandboxing."* 그리고 **TypeScript Agent SDK 는 `failIfUnavailable` 을
+> 기본으로 적용한다**(벤더 회신, 직접 확인함 — 의존 없는 배포판에서 SDK 로
+> `sandbox: {enabled: true}` 만 주면 `Sandbox required but unavailable` 로 즉시
+> 실패한다). **그래서 이 항목이 실제로 무는 대상은 CLI 를 직접 감싸는
+> 자동화**이지 SDK 사용자가 아니다.
+>
 > ### 그리고 그 경고는 `stderr` 로만 나온다
 >
 > `failIfUnavailable: false` 로 도는 회차의 `stdout`(JSON 스트림)에는
@@ -89,6 +97,13 @@
 > 이 저장소의 하네스가 정확히 그랬다. 자동화한다면 `stderr` 도 같이 읽고
 > `Sandbox disabled` 를 실패로 다뤄야 한다 — 아니면 그냥
 > `failIfUnavailable: true` 를 켜서 종료 코드로 받는다.
+>
+> **벤더에 보고했고 Informative 로 닫혔다**(HackerOne #3940470, 자산
+> `Claude Code`, CWE-223, Low). 사유는 타당하다 — 전제 조건이 전부 운영자
+> 환경의 속성이고 공격자가 만들 수 없으므로 프로그램 범위상 취약점이 아니라
+> **관측성 개선 제안**이다. 그래도 **문서화된 위험과 탐지 가능한 위험은 다른
+> 물건**이라는 점은 남는다. 이 문서가 `failIfUnavailable: true` 를 권하는 이유가
+> 그것이다.
 
 > ## ⚠️ `deny: ["Bash"]` 는 **답이 파일 바이트로 안 읽힐 때만** 효과를 막는다
 >
