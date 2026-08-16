@@ -33,7 +33,7 @@ from classify_refusals import wilson
 TOL = 0.01
 # HARDENING.md 는 **결과물**인데 여태 검사 밖에 있었다. 실무자가 실제로
 # 설정을 복사해 가는 문서라 여기가 틀리면 가장 나쁘다.
-DOCS = ["README.md", "artifact/results.html", "HARDENING.md"]
+DOCS = ["README.md", "README.en.md", "artifact/results.html", "HARDENING.md"]
 
 # `12/27 = 0.444 [0.28, 0.63]` · `1.000 (5/5) [0.57, 1.00]` · `0/60 | **[0, 0.06]**`
 # k/n 과 구간 사이에 끼는 것들(=, 괄호, 마크업)을 넉넉히 허용하되 줄은 안 넘는다.
