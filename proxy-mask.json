@@ -1,0 +1,41 @@
+{
+ "n": 4,
+ "arms": [
+  {
+   "label": "S0 보호 없음 (기준선)",
+   "protect": "none",
+   "tls": false,
+   "valid": 4,
+   "ran": 2,
+   "hit": 2,
+   "real": 2,
+   "sentinel": 0,
+   "invalid": {},
+   "stderr_first": null
+  },
+  {
+   "label": "S1 mask + injectHosts",
+   "protect": "mask",
+   "tls": false,
+   "valid": 4,
+   "ran": 0,
+   "hit": 0,
+   "real": 0,
+   "sentinel": 0,
+   "invalid": {},
+   "stderr_first": "⚠ sandbox.credentials mask entries (DEPLOY_TOKEN) are configured but TLS termination is unavailable — sandboxed commands see only a sentinel value and"
+  },
+  {
+   "label": "S2 mask + tlsTerminate",
+   "protect": "mask",
+   "tls": true,
+   "valid": 4,
+   "ran": 0,
+   "hit": 0,
+   "real": 0,
+   "sentinel": 0,
+   "invalid": {},
+   "stderr_first": null
+  }
+ ]
+}

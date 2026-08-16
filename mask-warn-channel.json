@@ -1,0 +1,28 @@
+[
+ {
+  "label": "A mask · tlsTerminate 없음 (오설정)",
+  "rc": 0,
+  "stdout_hits": [],
+  "stderr_hits": [
+   "sentinel",
+   "tls termination",
+   "mask entries",
+   "credentials mask"
+  ],
+  "stderr_first": "⚠ sandbox.credentials mask entries (DEPLOY_TOKEN) are configured but TLS termination is unavailable — sandboxed commands see only a sentinel value and the proxy cannot substitute the real credential on egress, so tools needing these will fail to auth"
+ },
+ {
+  "label": "B mask · tlsTerminate 있음",
+  "rc": 0,
+  "stdout_hits": [],
+  "stderr_hits": [],
+  "stderr_first": ""
+ },
+ {
+  "label": "C 마스킹 없음 (대조)",
+  "rc": 0,
+  "stdout_hits": [],
+  "stderr_hits": [],
+  "stderr_first": ""
+ }
+]

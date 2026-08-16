@@ -91,7 +91,10 @@
 > 실패한다). **그래서 이 항목이 실제로 무는 대상은 CLI 를 직접 감싸는
 > 자동화**이지 SDK 사용자가 아니다.
 >
-> ### 그리고 그 경고는 `stderr` 로만 나온다
+> ### 그리고 그 경고는 `stderr` 로만 나온다 — **두 번 확인됐다**
+
+> 같은 설계가 자격증명 마스킹 쪽에서도 나왔다(아래 네트워크 절).
+> 하나는 버릇이고 **둘은 설계다.**
 >
 > `failIfUnavailable: false` 로 도는 회차의 `stdout`(JSON 스트림)에는
 > **아무 흔적이 없다** — `is_error: false`, 오류 필드 없음, 정상 회차와 구별
@@ -277,6 +280,49 @@ grep -n '' /tmp/mono-xxxx/backend/CHANGELOG.md
 
 **분모는 스크립트가 실제로 실행된 회차**다. 실행되지 않은 회차는 네트워크에
 대해 아무것도 말하지 않는다 — 유효 30 중 실행 29·29·30 이었다.
+
+### 자격증명 보호 — `credentials` 블록은 작동한다
+
+| 보호 | 파일 (Bash 경유) | 환경변수 (영수증) |
+|---|---|---|
+| 없음 | **11/11** 노출 | 실값 그대로 |
+| `mode: "deny"` | **0/12 = 0.000** [0.00, 0.24] | `env=<unset>` |
+| `mode: "mask"` | 0 | `env=fake_value_<uuid>` — **센티널** |
+
+`deny` 는 파일을 막고 환경변수를 실제로 unset 한다. `mask` 는 명령에게 센티널을
+보여준다. 둘 다 문서대로다. 분모는 스크립트가 실제로 실행된 회차다.
+
+> **내장 `Read` 경로는 아직 판정 불가다.** 문서는 이 설정이 *"sandboxed Bash
+> commands only"* 라고 적는데, 그렇다면 내장 `Read` 로는 그대로 읽힌다는 뜻이다.
+> 기저율은 확보했으나(보호 없음 12/20 = 0.60) 규칙 팔이 계정 한도로 끊겼다.
+
+### ⚠️ 마스킹 오설정도 **`stderr` 로만** 보고된다
+
+`mask` 를 걸고 `network.tlsTerminate` 를 안 켜면 치환이 일어나지 않는다.
+문서는 *"Claude Code reports this misconfiguration at startup"* 이라고 적는다.
+**어디에** 보고하는지가 문제다.
+
+| 설정 | `stdout` (stream-json) | `stderr` | 종료 코드 |
+|---|---|---|---|
+| `mask` · `tlsTerminate` **없음** | **흔적 없음** | 경고 | **0** |
+| `mask` · `tlsTerminate` 있음 | 없음 | 없음 | 0 |
+| 마스킹 없음 (대조) | 없음 | 없음 | 0 |
+
+```
+⚠ sandbox.credentials mask entries (DEPLOY_TOKEN) are configured but TLS
+  termination is unavailable — sandboxed commands see only a sentinel value
+  and the proxy cannot substitute the real value
+```
+
+**샌드박스 의존성 건과 같은 계열이 두 번째로 나왔다.** 하나는 버릇이고 둘은
+설계다 — 보안 관련 오설정 경고는 `stderr` 로 가고 구조화 출력에는 안 실린다.
+
+이 조건은 **닫히는 방향의 실패**다: 명령은 센티널만 보고, 센티널이 그대로
+서버에 도달해 인증이 실패한다. 비밀이 새지는 않는다. 그래도 자동화는
+"마스킹이 걸려 있다" 와 "마스킹이 무력하다" 를 구별할 수 없다.
+
+**대응**: `mask` 를 쓸 거면 `network.tlsTerminate` 를 같이 켜고, CI 라면
+`stderr` 에서 `sandbox.credentials mask entries` 를 실패로 다뤄라.
 
 ### 사설·루프백 주소는 허용해도 막힌다
 
