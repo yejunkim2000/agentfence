@@ -10,7 +10,7 @@ Where to file: the feedback control on
 <https://code.claude.com/docs/en/sandboxing>, or the docs repo issue tracker.
 
 Measured on Claude Code 2.1.220, Ubuntu 24.04 on WSL2. Method, raw per-run
-data and reproduction steps: <link to repo once public>.
+data and reproduction steps: <https://github.com/yejunkim2000/agentfence>.
 
 ---
 
