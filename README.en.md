@@ -183,6 +183,7 @@ different numbers, that is the most useful thing anyone could send us.
 
 ## License / scope
 
-Research code. One product, one version, one account. The findings are about
-configuration behaviour, not about defeating a working control — with the
-dependencies present, the sandbox held in every one of 60 trials.
+[MIT](LICENSE). Research code — one product, one version, one account. The
+findings are about configuration behaviour, not about defeating a working
+control: with the dependencies present, the sandbox held in every one of 60
+trials.

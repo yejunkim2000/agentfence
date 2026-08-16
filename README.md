@@ -1187,3 +1187,11 @@ agent-belt의 `pass^k`와 **다른 지표**다. pass^k는 k회 전부 통과할 
 | [`RETROSPECTIVE.md`](RETROSPECTIVE.md) | 8월 회고 |
 | [`docs/91-superseded-results.md`](docs/91-superseded-results.md) | 폐기된 초기 결과. **인용 금지, 기록용** |
 | [`cases/SCHEMA.md`](cases/SCHEMA.md) | 케이스 스키마 |
+
+---
+
+## 라이선스
+
+[MIT](LICENSE). 코드도 측정 결과도 자유롭게 쓰되, **인용할 때는 범위를 같이
+옮겨 달라** — 한 제품, 한 버전(2.1.220), 한 계정, WSL2/Windows 에서 잰 값이다.
+범위를 떼면 이 저장소가 반복해서 경계한 바로 그 오류가 된다.
