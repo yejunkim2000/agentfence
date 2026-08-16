@@ -9,7 +9,7 @@
 # **결정적이라고 주장한 칸들**뿐이다 — 확률적 칸을 여기서 재면 같은 값이 나와도
 # 무엇이 복제된 것인지 말할 수 없다.
 #
-#     wsl -d Ubuntu -- sh /mnt/c/Users/yejun/agentfence/run_replica.sh
+#     wsl -d Ubuntu -- sh ./run_replica.sh
 #
 # ## 먼저 그 배포판에서 로그인해야 한다
 #
@@ -49,7 +49,7 @@ for b in bwrap socat; do
 done
 echo "bwrap: $(command -v bwrap) · socat: $(command -v socat)"
 
-cd /mnt/c/Users/yejun/agentfence
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 export PYTHONIOENCODING=utf-8
 
 echo "=== 복제 배포판: $(. /etc/os-release; echo "$PRETTY_NAME") ==="

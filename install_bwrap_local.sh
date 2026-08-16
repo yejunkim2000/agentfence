@@ -17,7 +17,7 @@
 # 같은 저장소의 같은 패키지라 측정 대상이 달라지지 않는다. 다른 것은 설치
 # 위치뿐이다.
 #
-#     wsl -d Ubuntu -- sh /mnt/c/Users/yejun/agentfence/install_bwrap_local.sh
+#     wsl -d Ubuntu -- sh ./install_bwrap_local.sh
 set -e
 
 DEST="$HOME/bwrap-local"

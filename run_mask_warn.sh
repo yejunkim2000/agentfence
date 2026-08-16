@@ -2,9 +2,9 @@
 # credentials 적용 범위 측정을 주 배포판에서 돌린다.
 # 인라인 셸은 Windows PATH 의 괄호에서 깨지므로 스크립트 파일로 넘긴다.
 #
-#     wsl -d Ubuntu-24.04 -- sh /mnt/c/Users/yejun/agentfence/run_network_probe.sh [n]
+#     wsl -d Ubuntu-24.04 -- sh ./run_network_probe.sh [n]
 set -e
-cd /mnt/c/Users/yejun/agentfence
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 PYTHONIOENCODING=utf-8
 export PYTHONIOENCODING
 

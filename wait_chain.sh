@@ -1,7 +1,7 @@
 #!/bin/sh
 # deny-chain5.out 이 완성될 때까지 기다렸다가 읽는다.
 # 완료 표지는 프로브가 마지막에 찍는 파일명이다.
-cd /mnt/c/Users/yejun/agentfence
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 i=0
 while [ $i -lt 200 ]; do
     if grep -q "deny-bash-chain.json" deny-chain5.out 2>/dev/null; then

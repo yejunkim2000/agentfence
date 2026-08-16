@@ -2,8 +2,10 @@
 # 복제 배포판(의존이 홈에만 있는 곳)에서 SDK 기본값을 확인한다.
 # **PATH 에 ~/bwrap-local 을 넣지 않는다** — 그래야 "의존 없음" 조건이 된다.
 #
-#     wsl -d Ubuntu -- sh /mnt/c/Users/yejun/agentfence/sdk_default_check.sh
+#     wsl -d Ubuntu -- sh ./sdk_default_check.sh
 set -e
+# 이 스크립트는 작업 디렉터리를 옮기므로 **자기 위치를 먼저 붙잡아 둔다.**
+HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 NODE="$HOME/node-v22.11.0-linux-x64/bin"
 PATH="$NODE:$PATH"
 export PATH
@@ -21,5 +23,5 @@ fi
 V=$(node -e "import('@anthropic-ai/claude-agent-sdk/package.json',{with:{type:'json'}}).then(m=>console.log(m.default.version)).catch(()=>console.log('?'))" 2>/dev/null || echo '?')
 echo "SDK: $V"
 
-cp /mnt/c/Users/yejun/agentfence/sdk_default_check.mjs ./check.mjs
+cp "$HERE/sdk_default_check.mjs" ./check.mjs
 exec node ./check.mjs

@@ -8,9 +8,9 @@
 #
 # 스크립트 파일 + nohup 으로 둘 다 피한다.
 #
-#     wsl -d Ubuntu-24.04 -- sh /mnt/c/Users/yejun/agentfence/run_chain.sh
+#     wsl -d Ubuntu-24.04 -- sh ./run_chain.sh
 set -e
-cd /mnt/c/Users/yejun/agentfence
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 export PYTHONIOENCODING=utf-8
 nohup python3 -u probe_deny_bash_chain.py 10 > deny-chain5.out 2>&1 &
 echo "기동 pid=$!  -> deny-chain5.out"

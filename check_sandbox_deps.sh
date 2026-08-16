@@ -6,7 +6,7 @@
 # 즉 **샌드박스를 못 세우는 환경**이다. 무엇이 없어서인지 갈라야
 # "복제 실패" 가 아니라 "복제 불가" 라고 말할 수 있다.
 #
-#     wsl -d <distro> -- sh /mnt/c/Users/yejun/agentfence/check_sandbox_deps.sh
+#     wsl -d <distro> -- sh ./check_sandbox_deps.sh
 . /etc/os-release
 echo "배포판: $PRETTY_NAME"
 echo "커널:   $(uname -r)"

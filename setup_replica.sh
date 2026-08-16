@@ -4,7 +4,7 @@
 # `wsl -d <distro> -- bash -lc '...'` 로 인라인 실행하면 Windows PATH 가 그대로
 # 상속돼서 `Program Files (x86)` 의 괄호가 셸을 깨뜨린다. 스크립트 파일로 넘긴다.
 #
-#     wsl -d Ubuntu -- sh /mnt/c/Users/yejun/agentfence/setup_replica.sh
+#     wsl -d Ubuntu -- sh ./setup_replica.sh
 set -e
 
 NODE_VER=v22.11.0
