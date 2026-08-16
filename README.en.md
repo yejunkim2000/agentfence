@@ -1,5 +1,7 @@
 # AGENTFENCE
 
+*한국어 원문 → [`README.md`](README.md)*
+
 **Which coding-agent boundary settings actually block anything?** We measured it,
 by observation rather than by reading the docs — a regression harness that runs
 a real agent against a real sandbox and counts what ends up on disk, on the

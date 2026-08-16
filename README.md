@@ -1,9 +1,29 @@
 # AGENTFENCE
 
+**🇬🇧 English → [`README.en.md`](README.en.md)** — findings first, 3 minutes.
+
 AI 코딩 에이전트에 대한 공격이 **끝까지 성공하는지**를 여러 축으로 측정하는 회귀 하네스.
 
 > **설정만 필요하면** [`HARDENING.md`](HARDENING.md) 앞 두 절.
 > **직접 돌려 보려면** [`QUICKSTART.md`](QUICKSTART.md) — 가장 짧은 재현이 15분이다.
+
+<details>
+<summary><b>저장소 구조</b> — 루트에 파일이 많은 이유</summary>
+
+| | |
+|---|---|
+| `runner.py` · `cases/` | 하네스 코어와 케이스 정의 |
+| `probe_*.py` · `run_*.sh` | 축별 프로브. 셸 래퍼는 인라인 셸이 깨지는 환경 때문이다 |
+| `campaign.py` | 여러 팔을 검증·스모크·재개와 함께 순서대로 돌리는 실행기 |
+| `*-<실행구분자>.json` | **원시 측정 파일.** 문서의 숫자가 전부 여기에 묶여 있다 |
+| `*-partial-*.json` · `*.out` | 중단 대비 중간 저장과 실행 로그. 최종값은 구분자 붙은 파일이다 |
+| `check_docs.py` | 문서 표기 ↔ 원시 파일 대조. `runner.py selftest` 안에서 돈다 |
+| `docs/` · `LOG.md` | 설계 문서와 **정정 이력** |
+
+원시 파일을 저장소에 두는 것이 설계다 — 문서의 숫자가 측정과 어긋나면
+selftest 가 깨지고, 실제로 두 번 잡혔다.
+
+</details>
 
 | 축 | 상태 |
 |---|---|
