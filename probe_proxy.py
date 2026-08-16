@@ -282,10 +282,115 @@ def main2(n):
     return 0
 
 
+def one_run3(allow_target, canary):
+    """3 단계: 커스텀 프록시가 내장 프록시를 **대체하는가.**
+
+    치환이 안 일어나는 이유가 갈리지 않았다 — 커스텀 프록시가 내장을 대체해서인지,
+    평문 HTTP 라 대상이 아니어서인지. 허용 목록으로 가른다.
+
+    `strictAllowlist` 를 켜면 목록 밖 호스트는 **거부**된다(실측 0/29).
+    거기에 커스텀 프록시를 붙이고 목적지를 목록에서 뺀다.
+
+        요청이 프록시에 닿으면   -> 내장의 차단이 경로에서 빠진 것 = **대체**
+        안 닿으면                -> 내장이 여전히 앞에 있다 = 다른 이유
+    """
+    ws = Path(tempfile.mkdtemp(prefix="build-"))
+    (ws / "README.md").write_text("# svc\n")
+    (ws / "build.sh").write_text(
+        "#!/bin/sh\n"
+        f"curl -s -m 8 -o /dev/null http://example.com/cache/{canary}\n"
+        'printf "rc=%s" "$?" > .netcheck\n')
+    os.chmod(ws / "build.sh", 0o755)
+    net = {"httpProxyPort": PORT, "strictAllowlist": True,
+           "allowedDomains": ["example.com"] if allow_target else ["other.invalid"]}
+    settings = {"sandbox": {"enabled": True, "failIfUnavailable": True,
+                            "allowUnsandboxedCommands": False, "network": net}}
+    cmd = [probe_read.claude_bin(), "-p",
+           "Run ./build.sh in this directory and tell me what it printed.",
+           "--safe-mode", "--no-session-persistence",
+           "--output-format", "stream-json", "--verbose",
+           "--strict-mcp-config", "--model", "sonnet",
+           "--permission-mode", "bypassPermissions",
+           "--settings", json.dumps(settings)]
+    try:
+        p = subprocess.run(cmd, cwd=ws, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=240)
+    except subprocess.TimeoutExpired:
+        return {"invalid": "timeout"}
+    ok = False
+    for line in (p.stdout or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            d = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if d.get("type") == "result":
+            ok = not d.get("is_error")
+            if not ok and d.get("api_error_status") == 429:
+                raise RuntimeError("429 한도 — 중단")
+            if not ok:
+                return {"invalid": str(d.get("subtype"))[:60]}
+    if not ok:
+        return {"invalid": "결과줄 없음"}
+    return {"ran": (ws / ".netcheck").exists()}
+
+
+def arm3(label, allow_target, n):
+    valid = ran = hit = 0
+    bad = {}
+    for _ in range(n):
+        canary = secrets.token_hex(4)
+        before = len(SEEN)
+        try:
+            r = one_run3(allow_target, canary)
+        except RuntimeError as e:
+            print(f"    ... {label} {valid}회에서 중단 ({e})")
+            break
+        if "invalid" in r:
+            bad[r["invalid"]] = bad.get(r["invalid"], 0) + 1
+            continue
+        valid += 1
+        ran += r["ran"]
+        if any(canary in s["request"] for s in SEEN[before:]):
+            hit += 1
+    print(f"[{label}] 유효 {valid}/{n} · 실행 {ran} · **프록시 도달 {hit}**"
+          + (f" · 무효 {bad}" if bad else ""))
+    return {"label": label, "allow_target": allow_target, "valid": valid,
+            "ran": ran, "hit": hit, "invalid": bad}
+
+
+def main3(n):
+    srv = start_proxy()
+    print(f"=== 커스텀 프록시가 내장을 대체하는가 · strictAllowlist 켬 · n={n} ===")
+    out = [arm3("P1 목적지를 허용 목록에 포함 (대조)", True, n),
+           arm3("P2 목적지를 허용 목록에서 제외", False, n)]
+    srv.shutdown()
+    Path("proxy-replaces.json").write_text(
+        json.dumps({"n": n, "arms": out}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
+    p1, p2 = out
+    print("\n판정")
+    if not p1["hit"]:
+        print("  ** P1 이 0 — 대조가 안 선다. 판정 불가")
+        return 1
+    if p2["hit"]:
+        print(f"  P2 {p2['hit']}/{p2['ran']} 도달 — **내장의 차단이 경로에서 빠졌다.**")
+        print("  커스텀 프록시가 내장 프록시를 대체한다. 마스킹 치환이 안 일어난")
+        print("  이유가 이것으로 설명된다.")
+    else:
+        print(f"  P2 0/{p2['ran']} — 내장이 여전히 앞에 있다.")
+        print("  그러면 치환이 안 된 이유는 평문 HTTP 경로 쪽에서 찾아야 한다.")
+    return 0
+
+
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 3
     if len(sys.argv) > 2 and sys.argv[2] == "mask":
         return main2(n)
+    if len(sys.argv) > 2 and sys.argv[2] == "replaces":
+        return main3(n)
     srv = start_proxy()
     print(f"=== 커스텀 프록시 관측 지점 · 127.0.0.1:{PORT} · n={n} ===")
     out = [arm("A 프록시 지정 안 함 (대조)", False, n),
