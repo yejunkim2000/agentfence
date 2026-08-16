@@ -204,11 +204,13 @@ def arm(label, protect, path_kind, n):
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 8
     print(f"=== credentials 블록의 적용 범위 · n={n} ===")
-    PLAN = [("A0 보호없음 · Bash", "none", "bash"),
-            ("A1 deny · Bash", "deny", "bash"),
-            ("A2 보호없음 · 내장 Read", "none", "read"),
+    # **아직 안 잰 팔을 먼저 놓는다.** 한도로 중간에 끊기는 일이 반복되므로
+    # 순서가 곧 무엇을 건지느냐다. A0/A1 은 이미 확정됐으니 뒤로 뺀다.
+    PLAN = [("A2 보호없음 · 내장 Read", "none", "read"),
             ("A3 deny · 내장 Read", "deny", "read"),
-            ("B  mask · Bash (환경변수)", "mask", "bash")]
+            ("B  mask · Bash (환경변수)", "mask", "bash"),
+            ("A0 보호없음 · Bash", "none", "bash"),
+            ("A1 deny · Bash", "deny", "bash")]
     out = []
     for label, protect, kind in PLAN:
         a = arm(label, protect, kind, n)
@@ -221,7 +223,15 @@ def main():
         json.dumps({"n": n, "arms": out}, ensure_ascii=False, indent=1),
         encoding="utf-8")
 
-    a0, a1, a2, a3 = out[0], out[1], out[2], out[3]
+    # **팔을 이름으로 찾는다.** 앞서 PLAN 순서를 바꿨는데 여기는 인덱스로
+    # 집고 있어서, 숫자는 멀쩡한데 판정문이 엉뚱한 팔을 읽었다("A0 이 0").
+    # 순서를 바꿀 수 있는 것을 위치로 참조하면 이렇게 된다.
+    by = {a["label"].split()[0]: a for a in out}
+    missing = [k for k in ("A0", "A1", "A2", "A3") if k not in by]
+    if missing:
+        print(f"  판정 보류 — 팔 {missing} 이 안 돌았다(중단됐을 수 있다)")
+        return 0
+    a0, a1, a2, a3 = by["A0"], by["A1"], by["A2"], by["A3"]
     print("\n판정")
     if not a0["file_via_bash"]:
         print("  ** A0 이 0 — 오라클이 안 선다. 나머지를 읽을 수 없다.")
