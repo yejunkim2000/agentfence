@@ -87,7 +87,35 @@ def run(label, settings, strip_path):
             "stderr_first": err.splitlines()[0][:200] if err else ""}
 
 
+def deps_reachable(strip_path):
+    """`strip_path` 를 적용한 뒤에도 의존이 잡히는가.
+
+    이 프로브는 `~/bwrap-local` 만 PATH 에서 뺀다. 의존이 **시스템에** 깔린
+    호스트(`/usr/bin/bwrap`)에서는 그 조작이 아무 효과가 없어 "의존 없음"
+    조건이 만들어지지 않는다. 그런데도 프로브는 판정을 냈다 —
+    2.1.233 회귀 측정에서 실제로 그렇게 틀린 결론을 냈다.
+
+    **조건을 못 만들었으면 재지 않는다.**
+    """
+    import shutil
+    env = dict(os.environ)
+    if strip_path:
+        local = os.path.expanduser("~/bwrap-local/usr/bin")
+        env["PATH"] = ":".join(p for p in env.get("PATH", "").split(":")
+                               if p and p != local)
+    return [b for b in ("bwrap", "socat")
+            if shutil.which(b, path=env.get("PATH", ""))]
+
+
 def main():
+    still = deps_reachable(strip_path=True)
+    if still:
+        print("!! 조건 미성립 — PATH 를 조작해도 의존이 그대로 잡힌다:",
+              ", ".join(still))
+        print("   이 호스트는 의존이 시스템에 깔려 있다(/usr/bin). 이 프로브는")
+        print("   의존이 홈에만 있는 배포판(복제본)에서 돌려야 한다.")
+        print("   **판정하지 않는다** — 조건을 못 만들고 낸 값은 결과가 아니다.")
+        return 2
     base = {"enabled": True, "allowUnsandboxedCommands": False}
     # 라벨은 **영문**이다. 이 파일이 벤더 제보의 첨부로 나가는데, 한국어 라벨은
     # 트리아저가 못 읽는다. 산출물의 독자를 생각해야 한다.
@@ -99,7 +127,9 @@ def main():
         run("C: deps missing, failIfUnavailable=true",
             {"sandbox": dict(base, failIfUnavailable=True)}, strip_path=True),
     ]
-    Path("verify-silent-fail.json").write_text(
+    # 버전 꼬리표. 회귀 측정에서 두 버전 값이 같은 파일에 섞이면 안 된다.
+    tag = os.environ.get("AGENTFENCE_TAG", "")
+    Path(f"verify-silent-fail{'-' + tag if tag else ''}.json").write_text(
         json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
 
     b = out[1]

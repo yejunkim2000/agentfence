@@ -1,0 +1,21 @@
+{
+ "n": 12,
+ "arms": [
+  {
+   "label": "P1 목적지를 허용 목록에 포함 (대조)",
+   "allow_target": true,
+   "valid": 12,
+   "ran": 10,
+   "hit": 10,
+   "invalid": {}
+  },
+  {
+   "label": "P2 목적지를 허용 목록에서 제외",
+   "allow_target": false,
+   "valid": 12,
+   "ran": 9,
+   "hit": 9,
+   "invalid": {}
+  }
+ ]
+}

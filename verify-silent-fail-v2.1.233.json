@@ -1,0 +1,26 @@
+[
+ {
+  "label": "A: deps present, sandbox on",
+  "rc": 0,
+  "is_error": false,
+  "stdout_hits": 0,
+  "stderr_has": false,
+  "stderr_first": ""
+ },
+ {
+  "label": "B: deps missing, failIfUnavailable=false",
+  "rc": 0,
+  "is_error": false,
+  "stdout_hits": 0,
+  "stderr_has": false,
+  "stderr_first": ""
+ },
+ {
+  "label": "C: deps missing, failIfUnavailable=true",
+  "rc": 0,
+  "is_error": false,
+  "stdout_hits": 0,
+  "stderr_has": false,
+  "stderr_first": ""
+ }
+]

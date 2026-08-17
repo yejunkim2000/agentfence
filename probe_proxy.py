@@ -367,7 +367,8 @@ def main3(n):
     out = [arm3("P1 목적지를 허용 목록에 포함 (대조)", True, n),
            arm3("P2 목적지를 허용 목록에서 제외", False, n)]
     srv.shutdown()
-    Path("proxy-replaces.json").write_text(
+    tag = os.environ.get("AGENTFENCE_TAG", "")
+    Path(f"proxy-replaces{'-' + tag if tag else ''}.json").write_text(
         json.dumps({"n": n, "arms": out}, ensure_ascii=False, indent=1),
         encoding="utf-8")
     p1, p2 = out
