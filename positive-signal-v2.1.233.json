@@ -1,0 +1,13 @@
+{
+ "version": "2.1.233 (Claude Code)",
+ "rc": 0,
+ "run_valid": true,
+ "event_types": [
+  "assistant",
+  "rate_limit_event",
+  "result",
+  "system",
+  "user"
+ ],
+ "hits": []
+}
