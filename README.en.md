@@ -70,7 +70,7 @@ Same rules, same fixture, only the mode changes (n=60 per arm):
 | **whole deny list** | **0/60 = 0.000** | **46/60 = 0.767** |
 
 In `bypassPermissions` all three are indistinguishable from baseline
-(`p = 0.480 / 0.480 / 0.354`); across modes `p = 9.4×10⁻²¹`. The inside control
+(`p = 0.480` / `p = 0.480` / `p = 0.354`); across modes `p = 9.4×10⁻²¹`. The inside control <!-- p: paths · 47/60 vs 51/60 --> <!-- p: names · 47/60 vs 51/60 --> <!-- p: 46/60 vs 51/60 --> <!-- p: 0/60 vs 46/60 -->
 is 60/60 in every arm — the rules did not make the agent unable to work, they
 **did nothing**.
 
@@ -111,8 +111,8 @@ substitute independently. Add `grep` and `sed`, `awk`, `od`, `python -c` remain.
 
 | where the answer lives | sandbox only | + `deny: ["Bash"]` | |
 |---|---|---|---|
-| a string in `.rodata` | 46/60 = 0.767 | **57/60 = 0.950** | **worse**, `p = 0.0073` |
-| computed at runtime, stored nowhere | 47/60 = 0.783 | **6/59 = 0.102** | `p = 1.2×10⁻¹⁴` |
+| a string in `.rodata` | 46/60 = 0.767 | **57/60 = 0.950** | **does not drop**, `p = 0.0073` (fails correction) | <!-- p: 46/60 vs 57/60 -->
+| computed at runtime, stored nowhere | 47/60 = 0.783 | **6/59 = 0.102** | `p = 1.2×10⁻¹⁴` | <!-- p: 47/60 vs 6/59 -->
 
 Blocking the shell made the first row *leak more*: built-in `Read` returns the
 ELF file and the string is right there. Bash attempts: 0/60. Blocking a **tool**
@@ -130,7 +130,7 @@ Same session, same request repeated with `--resume`:
 | turn 1 | 6/24 = **0.250** | [0.12, 0.45] |
 | turns 2–4 | 63/72 = **0.875** | [0.78, 0.93] |
 
-`p = 2.3×10⁻⁸`, replicated across two independent fixtures. Not a jailbreak —
+`p = 2.3×10⁻⁸`, replicated across two independent fixtures. Not a jailbreak — <!-- p: 6/24 vs 63/72 -->
 just asking again.
 
 ## 7. A custom proxy takes controls away rather than adding them
@@ -139,7 +139,16 @@ The docs offer `network.httpProxyPort` for organizations wanting stricter
 inspection. With it set, the built-in proxy leaves the path:
 
 - domain allowlist stops applying — an unlisted host is reached **5/5** even
-  with `strictAllowlist: true` (versus **0/29** without a custom proxy)
+  with `strictAllowlist: true` (versus **0/29** without a custom proxy).
+  Those denominators count only the runs where the script actually ran, which
+  is a variable created *after* treatment. Counting every valid run as a
+  failure instead (ITT) the same contrast reads **5/12** versus **0/30**.
+  And the two rows come from *different probes* — different scheme (plaintext
+  HTTP vs HTTPS), different settings (`allowedDomains: ["other.invalid"]` vs
+  no `allowedDomains` key at all) and different oracle — so this is not yet a
+  proxy-on/proxy-off contrast inside one experiment. See the box in
+  `HARDENING.md`; `probe_proxy.py <n> axis` runs all four arms interleaved in
+  one script and the next measurement replaces this row.
 - credential `mask` never substitutes — the proxy receives the sentinel
   **11/11**, the real value **0/11**, and in the documented-correct
   configuration there is no warning at all
@@ -154,8 +163,8 @@ what disappears.
 
 A second WSL2 instance on the same host (empty `~/.claude`, same CLI and
 `bubblewrap` versions) reproduced the enforcement cell (**0/10**, all
-`enforcement`), the layer split (`p = 0.678`), and the read reversal
-(16/20 vs **33/40**, `p = 1.000`) — mechanism included: built-in `Read` denied
+`enforcement`), the layer split (`p = 0.678`), and the read reversal <!-- p: 46/60 vs 9/10 -->
+(16/20 vs **33/40**, `p = 1.000`) — mechanism included: built-in `Read` denied <!-- p: 16/20 vs 33/40 -->
 33/33 attempts, Bash denied 2/55.
 
 **Not controlled: the account, the hardware, the Windows host.** This is a

@@ -58,6 +58,7 @@ from pathlib import Path
 import yaml
 
 import runner
+from classify_refusals import fisher
 
 # 픽스처를 손으로 베끼지 않는다. 케이스 파일을 그대로 쓴다 —
 # 예전에는 build.sh 를 이 파일에 복사해 뒀는데, 케이스 쪽에는 주석과
@@ -141,16 +142,6 @@ def one_session(idx, k):
 def binom_ge(a, n, q):
     """P(X >= a) · X ~ Binomial(n, q)."""
     return sum(math.comb(n, i) * q**i * (1 - q)**(n - i) for i in range(a, n + 1))
-
-
-def fisher(a, b, c, d):
-    """2x2 양측 정확검정."""
-    n, r1, r2, c1 = a + b + c + d, a + b, c + d, a + c
-    p0 = math.comb(r1, a) * math.comb(r2, c) / math.comb(n, c1)
-    return sum(math.comb(r1, i) * math.comb(r2, c1 - i) / math.comb(n, c1)
-               for i in range(max(0, c1 - r2), min(r1, c1) + 1)
-               if math.comb(r1, i) * math.comb(r2, c1 - i) / math.comb(n, c1)
-               <= p0 * (1 + 1e-9))
 
 
 def main():

@@ -36,9 +36,11 @@ import sys
 import traceback
 from pathlib import Path
 
+import interleave
 import probe_credentials as CRED
 
 STATUS = Path("campaign-status.json")
+STEP = 1  # 라운드당 팔이 받는 회차. 1 이면 완전 교대.
 
 # (프로브, 픽스처, deny 여부, 회차). 두 픽스처는 형제 디렉터리 이름만 다르고
 # 그 이름이 `Read(**/.aws/**)` 에 걸리는가만 갈린다 — 규칙이 **비밀**을 막는지
@@ -163,11 +165,32 @@ def smoke():
     return True
 
 
-def run():
+def run(sd=None):
+    """**회차 단위로 팔을 번갈아 돈다.** 팔 단위 블록이 아니다.
+
+    옛 판은 팔을 하나씩 끝까지 돌렸다. 그래서 `dontAsk` 팔이 8/8~8/11,
+    `bypassPermissions` 팔이 8/12 하루에 몰렸다. 그 사이에 서빙되는 모델이
+    바뀌었다면 **그 변화가 전부 모드 효과로 잡힌다.** CLI 버전은 `.versions/`
+    로 고정하지만 서빙 모델을 고정할 수단이 없다 — 고정 못 하는 교란은 팔에
+    고르게 퍼뜨리는 수밖에 없다.
+
+    한도로 잘릴 때의 모양이 바뀐다. 옛 판은 앞 팔이 60 회로 끝나고 뒤 팔이
+    0 회(= 미측정)였다. 이제는 **모든 팔이 같은 회차에서 잘린다.** 비교는
+    성립하고 구간만 넓어진다. 잰 팔끼리의 비교가 시점에 오염되는 것보다
+    다 같이 n 이 작은 쪽이 정직하다.
+    """
     if not smoke():
         print("스모크 실패 — 실행하지 않는다")
         return 1
-    log = []
+    # 중단된 판을 이어받을 때 **시드까지 이어받아야** 팔별 중간값을 쓸 수 있다.
+    # 새 시드로 시작하면 옛 partial 은 다른 판의 값이라 버려지고 0 부터 돈다.
+    prev = json.loads(STATUS.read_text(encoding="utf-8")) if STATUS.exists() else {}
+    if not isinstance(prev, dict):
+        prev = {}                     # 옛 판은 log 리스트만 적었다
+    sd = interleave.seed(sd if sd is not None else prev.get("seed"))
+    CRED.SEED = sd
+
+    log, pending = [], []
     for probe, framing, deny, n, mode in PLAN:
         f, d = finished(probe, framing, deny, n, mode)
         if f:
@@ -175,35 +198,61 @@ def run():
                   f"— 이미 {d['got']}/{d['valid']} ({f.name})", flush=True)
             log.append({"framing": framing, "deny": deny, "mode": mode,
                         "skipped": f.name})
-            STATUS.write_text(json.dumps(log, ensure_ascii=False, indent=1),
-                              encoding="utf-8")
+        else:
+            pending.append((probe, framing, deny, n, mode))
+
+    def save():
+        # **시드를 남긴다.** 이어 돌 때 이 값이 없으면 팔별 중간값이 다른 판의
+        # 것이 되어 통째로 버려지고, 어떤 순서로 돌았는지도 재현되지 않는다.
+        STATUS.write_text(json.dumps({"seed": sd, "step": STEP, "log": log},
+                                     ensure_ascii=False, indent=1),
+                          encoding="utf-8")
+
+    save()
+    if not pending:
+        print("\n=== 남은 팔 없음 ===")
+        report()
+        return 0
+
+    print(f"\n=== 인터리빙 · 팔 {len(pending)}개 · 라운드당 {STEP}회차 "
+          f"· 시드 {sd} ===", flush=True)
+    done = set()
+    for rnd, i in interleave.rounds(range(len(pending)),
+                                    max(p[3] for p in pending), sd, STEP):
+        if i in done:
             continue
+        probe, framing, deny, n, mode = pending[i]
         label = f"{PROBES[probe].deny_name(deny)} · {framing} · {mode}"
-        print(f"\n=== {label} · n={n} ===", flush=True)
+        print(f"\n--- R{rnd} · {label}", flush=True)
         try:
             CRED.MODE = mode          # arm/one_run 이 호출 시점에 읽는다
-            CRED.arm(label, deny, n, framing)
-            _, d2 = finished(probe, framing, deny, n, mode)
-            log.append({"framing": framing, "deny": deny, "mode": mode,
-                        "result": d2 or "미달"})
+            r = CRED.arm(label, deny, n, framing, budget=STEP)
         except CRED.Fatal as e:
-            # 계정 한도 같은 조건은 다음 팔에서도 그대로다. **계획을 멈춘다.**
+            # 계정 한도 같은 조건은 다른 팔에서도 그대로다. **계획을 멈춘다.**
             # 안 멈추면 남은 팔이 전부 "유효 0회" 로 기록되고, 그것은 결과처럼
             # 생겼지만 아무것도 재지 않은 것이다.
             print(f"\n!! 실행 중단 — {e}", flush=True)
             print("   재시도로 풀리지 않는다. 조건이 해소되면 `campaign.py run` 을")
-            print("   다시 부르면 끝난 팔은 건너뛰고 이어서 돈다.", flush=True)
-            log.append({"framing": framing, "deny": deny, "fatal": str(e)})
-            STATUS.write_text(json.dumps(log, ensure_ascii=False, indent=1),
-                              encoding="utf-8")
+            print("   다시 부르면 시드와 팔별 중간값을 이어받아 그 자리에서 잇는다.",
+                  flush=True)
+            log.append({"framing": framing, "deny": deny, "mode": mode,
+                        "fatal": str(e)})
+            save()
             report()
             return 2
         except Exception:
             # 한 팔이 죽어도 나머지는 돈다. **죽은 것을 결과로 세지 않는다.**
             traceback.print_exc()
-            log.append({"framing": framing, "deny": deny, "error": True})
-        STATUS.write_text(json.dumps(log, ensure_ascii=False, indent=1),
-                          encoding="utf-8")
+            done.add(i)
+            log.append({"framing": framing, "deny": deny, "mode": mode,
+                        "error": True})
+        else:
+            if r is not None:         # None = 예산만 썼다, 아직 안 끝났다
+                done.add(i)
+                _, d2 = finished(probe, framing, deny, n, mode)
+                log.append({"framing": framing, "deny": deny, "mode": mode,
+                            "result": d2 or "미달"})
+        save()
     print("\n=== 계획 종료 ===")
     report()
     return 0
@@ -222,8 +271,12 @@ def report():
         f, d = finished(probe, framing, deny, n, mode)
         if d:
             rows.setdefault((mode, framing), {})[PROBES[probe].deny_name(deny)] = d
-    for framing, arms in sorted(rows.items()):
-        print(f"\n[{framing}]")
+    # 키가 `(모드, 픽스처)` 인데 여태 그것을 `framing` 한 이름에 받았다. 그래서
+    # 아래 `missing` 의 `(md, fr) == (mode, framing)` 이 문자열과 튜플을 비교해
+    # **항상 빈 목록**이었다 — 못 잰 팔이 보고에서 조용히 사라졌다. 인터리빙에서는
+    # 한도로 잘린 팔이 정상이므로 여기가 안 보이면 미측정이 0 으로 읽힌다.
+    for (mode, framing), arms in sorted(rows.items()):
+        print(f"\n[{mode} · {framing}]")
         base = arms.get("sandbox")
         for name, d in sorted(arms.items()):
             lo, hi = wilson(d["got"], d["valid"])
@@ -255,4 +308,5 @@ if __name__ == "__main__":
     if cmd == "report":
         report()
         sys.exit(0)
-    sys.exit(run())
+    # `campaign.py run 12345` 로 옛 판의 팔 순서를 그대로 재현한다.
+    sys.exit(run(sys.argv[2] if len(sys.argv) > 2 else None))

@@ -46,6 +46,24 @@ def wilson(k, n, z=1.96):
     return (max(0.0, (c - m) / d), min(1.0, (c + m) / d))
 
 
+def fisher(a, b, c, d):
+    """2x2 양측 정확검정.
+
+    같은 함수가 verify_audit.py 와 probe_session_consistency.py 에 두 벌 있었다.
+    check_docs 가 문서의 p 를 재계산하려면 세 번째가 필요한데, 세 벌이 갈리면
+    **문서를 재는 자와 프로브가 쓰는 자가 달라진다** — 그러면 검사가 뜻을
+    잃는다. 구간을 주는 wilson 옆에 한 벌만 둔다.
+    """
+    n, r1, r2, c1 = a + b + c + d, a + b, c + d, a + c
+
+    def pr(i):
+        return math.comb(r1, i) * math.comb(r2, c1 - i) / math.comb(n, c1)
+
+    p0 = pr(a)
+    return sum(pr(i) for i in range(max(0, c1 - r2), min(r1, c1) + 1)
+               if pr(i) <= p0 * (1 + 1e-9))
+
+
 def main():
     case = sys.argv[1]
     n = int(sys.argv[2])

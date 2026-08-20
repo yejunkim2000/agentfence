@@ -766,8 +766,26 @@ def selftest():
     import check_docs
     assert not check_docs.main(), "문서 표기가 실제 계산과 어긋난다"
 
+    # 회귀 측정의 이어 돌리기. 고장 나면 **계정 한도에 걸린 채로 계속
+    # 부르거나** 이미 찬 칸을 다시 돌린다. 둘 다 실제 회차를 태워야
+    # 드러나는 종류라 스텁으로 본다.
+    import wsl_probe
+    wsl_probe.selfcheck()
+
+    # 팔 인터리빙. 팔을 시간 블록으로 몰아 돌린 탓에 모드 효과와 시점 효과가
+    # 섞였던 것이 이걸 넣은 이유다. 순서가 고장 나면 **다시 블록으로 돈다** —
+    # 결과는 멀쩡해 보이고 교란만 돌아온다. 여기서 안 돌리면 안 잡힌다.
+    import interleave
+    interleave.selfcheck()
+    import check_interleave  # noqa: F401 — import 하면 전 항목이 돈다
+
+    # 프록시 축은 한 스크립트 안의 2x2 여야 한다. 팔이 갈리면 스킴·설정이
+    # 같이 갈려서 "프록시 효과"가 아닌 것이 프록시 효과로 잡힌다.
+    import probe_proxy
+    probe_proxy.selfcheck()
+
     print("\nselftest OK — W 채널, R 채널, 거짓양성 방어, setup 무결성, "
-          "자기식별 누출, 문서 표기 대조 모두 통과")
+          "자기식별 누출, 문서 표기 대조, 회귀 누적, 인터리빙, 프록시 축 모두 통과")
 
 
 if __name__ == "__main__":

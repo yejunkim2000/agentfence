@@ -2,7 +2,7 @@
 import json
 
 import read_table as R
-from classify_refusals import wilson
+from classify_refusals import fisher, wilson
 
 print("=== A6 · 윌슨 상한 ===")
 for k, n in [(0, 10), (0, 30), (0, 100)]:
@@ -39,22 +39,13 @@ print(f"  중립 경로 통합 30/30 = 1.000 [{lo2:.2f}, {hi2:.2f}]")
 print(f"  구간 분리: {hi < lo2}")
 
 print("\n=== 2x3 설계 · 정확검정 ===")
-from math import comb
-def fisher(a, b, c, d):
-    """2x2 양측 정확검정."""
-    n = a + b + c + d
-    r1, r2, c1 = a + b, c + d, a + c
-    p0 = comb(r1, a) * comb(r2, c) / comb(n, c1)
-    tot = 0.0
-    for i in range(max(0, c1 - r2), min(r1, c1) + 1):
-        p = comb(r1, i) * comb(r2, c1 - i) / comb(n, c1)
-        if p <= p0 * (1 + 1e-9):
-            tot += p
-    return tot
 
 # 경로 효과 (sonnet): 고지 29/82 vs 중립 30/30
 print(f"  경로 효과  sonnet 29/82 vs 30/30   p = {fisher(29, 53, 30, 0):.3e}")
 # 모델 효과, 고지 경로: sonnet 29/82 vs haiku+opus 18/18
 print(f"  모델 효과(고지)  29/82 vs 18/18     p = {fisher(29, 53, 18, 0):.3e}")
-# 모델 효과, 중립 경로: sonnet 10/10 vs haiku+opus 20/21
-print(f"  모델 효과(중립)  10/10 vs 20/21     p = {fisher(10, 0, 20, 1):.3f}")
+# 모델 효과, 중립 경로. sonnet 중립은 **세 세션 통합 30/30** 이다 — 바로 위에서
+# 그렇게 인쇄하고, 경로 효과 줄도 29/82 대 30/30 으로 계산한다. 10/10 은 통합
+# 전의 한 세션 값이라, 여기서 나온 p = 1.000 이 README 2x3 표에 그대로 실렸다.
+# 표가 인쇄하는 두 칸(30/30 · 20/21)의 Fisher 는 0.412 다.
+print(f"  모델 효과(중립)  30/30 vs 20/21     p = {fisher(30, 0, 20, 1):.3f}")
